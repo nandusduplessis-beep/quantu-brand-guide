@@ -218,9 +218,14 @@ const Index = () => {
 
           <div className="bg-card p-6 rounded-xl shadow-md mt-8 border border-border hover:shadow-lg transition-shadow">
             <h4 className="font-bold text-xl text-foreground mb-4">Tone and Behavior</h4>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-muted-foreground mb-4">
               Our tone balances Sage intelligence with Explorer momentum—informing with authority while inspiring possibility. This grid shows how our dual archetype guides our communication.
             </p>
+            <div className="bg-accent/10 p-4 rounded-lg mb-6 border-l-4 border-primary">
+              <p className="text-sm text-foreground">
+                <strong>Communication Principles:</strong> Be accessible and clear. Be data-driven and insightful. Be enabling and forward-thinking. Every message empowers audiences with knowledge that drives innovation.
+              </p>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {appData.tone.map((item, idx) => (
                 <div key={idx} className="bg-accent/20 p-4 rounded-lg border border-border hover:bg-accent/30 transition-colors">
@@ -239,6 +244,46 @@ const Index = () => {
           </div>
         </section>
 
+        {/* Core Values Section */}
+        <section className="mb-20">
+          <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-8 text-center">Core Values</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-card p-8 rounded-xl shadow-md border border-border hover:shadow-lg transition-all hover:scale-105">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
+                <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <h4 className="font-bold text-xl text-foreground mb-3 text-center">Accessible</h4>
+              <p className="text-muted-foreground text-center">
+                We break down barriers to understanding complex technologies, translating quantum concepts into understandable language.
+              </p>
+            </div>
+            <div className="bg-card p-8 rounded-xl shadow-md border border-border hover:shadow-lg transition-all hover:scale-105">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
+                <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <h4 className="font-bold text-xl text-foreground mb-3 text-center">Data-Driven</h4>
+              <p className="text-muted-foreground text-center">
+                We harness the power of AI and real-time data analytics to deliver precise, actionable intelligence backed by robust data.
+              </p>
+            </div>
+            <div className="bg-card p-8 rounded-xl shadow-md border border-border hover:shadow-lg transition-all hover:scale-105">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
+                <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h4 className="font-bold text-xl text-foreground mb-3 text-center">Enable</h4>
+              <p className="text-muted-foreground text-center">
+                We empower organizations to thrive in the quantum landscape with knowledge that drives innovation and confident decision-making.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Section 2: Strategy */}
         <section id="strategy" className="mb-20 pt-16 -mt-16 scroll-mt-16">
           <h3 className="text-2xl md:text-4xl font-bold text-foreground border-l-4 border-primary pl-4 mb-3 animate-slide-in">
@@ -250,17 +295,27 @@ const Index = () => {
 
           <div className="bg-card p-6 rounded-xl shadow-md mb-8 border border-border hover:shadow-lg transition-shadow">
             <h4 className="font-bold text-xl text-foreground mb-4">Brand Role in the Ecosystem</h4>
-            <p className="text-muted-foreground mb-6">We exist within the Resonance framework. This diagram illustrates our distinct but complementary roles.</p>
+            <p className="text-muted-foreground mb-6">
+              The Quantum Insider exists within the Resonance ecosystem - bridging the gap between complex emerging technologies and industry decision-makers. This diagram illustrates our distinct but complementary roles.
+            </p>
             <div className="flex flex-col md:flex-row gap-6 items-stretch">
               <div className="flex-1 bg-accent/20 border-2 border-accent p-6 rounded-xl text-center hover:scale-105 transition-transform">
                 <h5 className="font-bold text-lg text-foreground">Resonance (Parent)</h5>
                 <p className="text-2xl font-semibold text-primary my-2">The Architect</p>
-                <p className="text-muted-foreground">Designs clarity across deep tech sectors (AI, Space, Climate, Quantum).</p>
+                <p className="text-muted-foreground mb-3">
+                  Designs clarity across deep tech sectors (AI, Space, Climate, Quantum).
+                </p>
+                <p className="text-sm text-muted-foreground italic">
+                  "Empowering global industries by making emerging tech universally accessible through our innovative intelligence ecosystem."
+                </p>
               </div>
               <div className="flex-1 bg-primary/10 border-2 border-primary p-6 rounded-xl text-center hover:scale-105 transition-transform">
                 <h5 className="font-bold text-lg text-foreground">TQI (Quantum Insider)</h5>
                 <p className="text-2xl font-semibold text-primary my-2">The Interpreter</p>
-                <p className="text-muted-foreground">Makes quantum understandable, actionable, and commercially relevant.</p>
+                <p className="text-muted-foreground mb-3">
+                  Makes quantum understandable, actionable, and commercially relevant.
+                </p>
+                <p className="text-sm text-primary font-semibold">powered by Resonance</p>
               </div>
             </div>
           </div>
@@ -366,8 +421,14 @@ const Index = () => {
         <CollectiveImpact />
       </main>
 
-      <footer className="text-center py-8 text-muted-foreground text-sm border-t border-border">
-        <p>The Quantum Insider - Interactive Brand Framework</p>
+      <footer className="text-center py-12 border-t border-border bg-card">
+        <div className="container mx-auto px-4">
+          <p className="text-foreground font-semibold mb-2">The Quantum Insider - Interactive Brand Framework</p>
+          <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
+            <span>powered by</span>
+            <span className="font-bold text-primary">Resonance</span>
+          </p>
+        </div>
       </footer>
 
       <EmailPopup />

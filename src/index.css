@@ -9,48 +9,54 @@ All colors MUST be HSL.
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 237 89% 6%;
+    --foreground: 237 89% 7%;
 
     --card: 0 0% 100%;
-    --card-foreground: 237 89% 6%;
+    --card-foreground: 237 89% 7%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 237 89% 6%;
+    --popover-foreground: 237 89% 7%;
 
-    --primary: 182 84% 35%;
+    /* Resonance + Quantum Brand Colors */
+    --primary: 186 90% 35%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 183 47% 68%;
-    --secondary-foreground: 237 89% 6%;
+    --secondary: 186 47% 68%;
+    --secondary-foreground: 237 89% 7%;
 
-    --muted: 183 19% 62%;
+    --muted: 220 13% 76%;
     --muted-foreground: 237 30% 40%;
 
-    --accent: 183 47% 68%;
-    --accent-foreground: 237 89% 6%;
+    --accent: 186 47% 68%;
+    --accent-foreground: 237 89% 7%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 183 25% 90%;
-    --input: 183 25% 90%;
-    --ring: 182 84% 35%;
+    --border: 220 13% 90%;
+    --input: 220 13% 90%;
+    --ring: 186 90% 35%;
 
     --radius: 0.75rem;
 
-    /* Quantum Insider Brand Colors */
-    --quantum-dark: 237 89% 6%;
-    --quantum-teal: 182 84% 35%;
-    --quantum-light-teal: 183 47% 68%;
-    --quantum-muted: 183 19% 62%;
+    /* Resonance Brand Colors - Official */
+    --resonance-dark: 237 89% 7%;        /* #040620 */
+    --resonance-blue: 230 100% 47%;      /* #0014f0 */
+    --resonance-gray: 220 13% 76%;       /* #bec1c9 */
+    
+    /* Quantum Insider Brand Color - Official */
+    --quantum-teal: 186 90% 35%;         /* #0aa0ab */
+    --quantum-light-teal: 186 47% 68%;
+    --quantum-dark: 237 89% 7%;
     
     /* Gradients */
-    --gradient-quantum: linear-gradient(135deg, hsl(182 84% 35%), hsl(183 47% 68%));
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(183 47% 95%));
+    --gradient-quantum: linear-gradient(135deg, hsl(186 90% 35%), hsl(186 47% 68%));
+    --gradient-resonance: linear-gradient(135deg, hsl(230 100% 47%), hsl(186 90% 35%));
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(186 47% 95%));
     
     /* Shadows */
-    --shadow-quantum: 0 10px 40px -10px hsl(182 84% 35% / 0.3);
-    --shadow-soft: 0 4px 20px -4px hsl(237 89% 6% / 0.1);
+    --shadow-quantum: 0 10px 40px -10px hsl(186 90% 35% / 0.3);
+    --shadow-soft: 0 4px 20px -4px hsl(237 89% 7% / 0.1);
     
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
