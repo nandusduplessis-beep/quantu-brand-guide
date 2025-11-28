@@ -3,6 +3,7 @@ import SolutionsExplorer from "@/components/SolutionsExplorer";
 import BrandCampaign from "@/components/BrandCampaign";
 import CollectiveImpact from "@/components/CollectiveImpact";
 import { EmailPopup } from "@/components/EmailPopup";
+import { useToast } from "@/hooks/use-toast";
 import quantumLogo from "@/assets/quantum-logo.png";
 import iconMarketIntelligence from "@/assets/icon-market-intelligence.png";
 import iconEcosystem from "@/assets/icon-ecosystem.png";
@@ -33,10 +34,19 @@ interface StructureData {
 }
 
 const Index = () => {
+  const { toast } = useToast();
   const [activeSection, setActiveSection] = useState("identity");
   const [activeArchetype, setActiveArchetype] = useState<'sage' | 'explorer'>('sage');
   const [activeStructure, setActiveStructure] = useState<'what' | 'how' | 'solutions' | 'why'>('what');
   const [activeTab, setActiveTab] = useState<'tagline' | 'role' | 'summary'>('tagline');
+
+  const copyColor = (color: string, name: string) => {
+    navigator.clipboard.writeText(color);
+    toast({
+      title: "Color copied!",
+      description: `${name} (${color}) copied to clipboard`,
+    });
+  };
 
   const appData = {
     archetypes: {
@@ -240,6 +250,182 @@ const Index = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Visual Identity Section */}
+        <section className="mb-20">
+          <h3 className="text-2xl md:text-4xl font-bold text-foreground border-l-4 border-primary pl-4 mb-3 animate-slide-in">
+            Visual Identity
+          </h3>
+          <p className="text-muted-foreground mb-8 max-w-4xl">
+            Our visual identity reflects our commitment to clarity, innovation, and accessibility. Every design element—from our logo to our color palette—is purposefully crafted to communicate quantum intelligence with confidence and sophistication.
+          </p>
+
+          {/* Logo & Symbolism */}
+          <div className="bg-card p-6 rounded-xl shadow-md mb-8 border border-border hover:shadow-lg transition-shadow">
+            <h4 className="font-bold text-xl text-foreground mb-4 flex items-center gap-2">
+              <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+              </svg>
+              Logo & Brand Mark
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex items-center justify-center bg-accent/10 p-8 rounded-lg">
+                <img src={quantumLogo} alt="The Quantum Insider Logo" className="max-h-24 w-auto" />
+              </div>
+              <div className="space-y-3">
+                <p className="text-foreground">
+                  <strong>Symbolism:</strong> The Resonance logo features three nested hexagons representing the integration of emerging technology sectors, layered intelligence gathering, and expanding accessibility of complex information.
+                </p>
+                <p className="text-muted-foreground text-sm">
+                  The hexagonal motif symbolizes strength and interconnectedness, paired with bold typography that reflects our modern, data-driven approach to quantum intelligence.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Color Palette */}
+          <div className="bg-card p-6 rounded-xl shadow-md mb-8 border border-border hover:shadow-lg transition-shadow">
+            <h4 className="font-bold text-xl text-foreground mb-4 flex items-center gap-2">
+              <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+              </svg>
+              Color Palette
+            </h4>
+            <p className="text-muted-foreground mb-6">
+              We use classic black and white for our primary colors, contrasted by cool and warm tones. Our Quantum teal represents innovation and clarity, while Resonance colors provide depth and authority.
+            </p>
+            
+            <div className="space-y-6">
+              {/* Quantum Colors */}
+              <div>
+                <h5 className="font-semibold text-foreground mb-3">Quantum Insider Primary</h5>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="group cursor-pointer" onClick={() => copyColor('#0aa0ab', 'Quantum Teal')}>
+                    <div className="h-24 rounded-lg shadow-md transition-all hover:scale-105 hover:shadow-xl" style={{ backgroundColor: '#0aa0ab' }}></div>
+                    <p className="text-sm font-mono mt-2 text-foreground">#0aa0ab</p>
+                    <p className="text-xs text-muted-foreground">Quantum Teal</p>
+                    <p className="text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">Click to copy</p>
+                  </div>
+                  <div className="group cursor-pointer" onClick={() => copyColor('#040620', 'Deep Navy')}>
+                    <div className="h-24 rounded-lg shadow-md transition-all hover:scale-105 hover:shadow-xl" style={{ backgroundColor: '#040620' }}></div>
+                    <p className="text-sm font-mono mt-2 text-foreground">#040620</p>
+                    <p className="text-xs text-muted-foreground">Deep Navy</p>
+                    <p className="text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">Click to copy</p>
+                  </div>
+                  <div className="group cursor-pointer" onClick={() => copyColor('#bec1c9', 'Neutral Gray')}>
+                    <div className="h-24 rounded-lg shadow-md border border-border transition-all hover:scale-105 hover:shadow-xl" style={{ backgroundColor: '#bec1c9' }}></div>
+                    <p className="text-sm font-mono mt-2 text-foreground">#bec1c9</p>
+                    <p className="text-xs text-muted-foreground">Neutral Gray</p>
+                    <p className="text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">Click to copy</p>
+                  </div>
+                  <div className="group cursor-pointer" onClick={() => copyColor('#0014f0', 'Resonance Blue')}>
+                    <div className="h-24 rounded-lg shadow-md transition-all hover:scale-105 hover:shadow-xl" style={{ backgroundColor: '#0014f0' }}></div>
+                    <p className="text-sm font-mono mt-2 text-foreground">#0014f0</p>
+                    <p className="text-xs text-muted-foreground">Resonance Blue</p>
+                    <p className="text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">Click to copy</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Gradient Examples */}
+              <div>
+                <h5 className="font-semibold text-foreground mb-3">Signature Gradients</h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="h-24 rounded-lg shadow-md transition-all hover:scale-105 hover:shadow-xl" 
+                       style={{ background: 'linear-gradient(135deg, #0aa0ab, #6dd5ed)' }}>
+                    <div className="h-full flex items-center justify-center">
+                      <p className="text-white font-semibold">Quantum Gradient</p>
+                    </div>
+                  </div>
+                  <div className="h-24 rounded-lg shadow-md transition-all hover:scale-105 hover:shadow-xl" 
+                       style={{ background: 'linear-gradient(135deg, #0014f0, #0aa0ab)' }}>
+                    <div className="h-full flex items-center justify-center">
+                      <p className="text-white font-semibold">Resonance Gradient</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Typography */}
+          <div className="bg-card p-6 rounded-xl shadow-md mb-8 border border-border hover:shadow-lg transition-shadow">
+            <h4 className="font-bold text-xl text-foreground mb-4 flex items-center gap-2">
+              <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Typography System
+            </h4>
+            <p className="text-muted-foreground mb-6">
+              Our font choice embodies professionalism and timelessness with legible and distinct characters. Roboto provides a pleasant reading experience through substantial and inviting content.
+            </p>
+            
+            <div className="space-y-6">
+              <div className="bg-accent/10 p-6 rounded-lg">
+                <p className="text-sm text-muted-foreground mb-2">Headings - Roboto Bold</p>
+                <h1 className="text-4xl font-bold text-foreground mb-2">ABCDEFGHIJKLMNOPQRSTUVWXYZ</h1>
+                <p className="text-muted-foreground text-sm">abcdefghijklmnopqrstuvwxyz 1234567890</p>
+              </div>
+              <div className="bg-accent/10 p-6 rounded-lg">
+                <p className="text-sm text-muted-foreground mb-2">Body Text - Roboto Regular</p>
+                <p className="text-lg text-foreground">
+                  The Quantum Insider delivers market intelligence for deep tech decision-makers — providing the clarity and confidence to make critical decisions shaping the future of quantum technology.
+                </p>
+              </div>
+              
+              {/* Typography Scale */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-accent/10 p-4 rounded-lg">
+                  <p className="text-4xl font-bold text-foreground">Large Heading</p>
+                  <p className="text-xs text-muted-foreground mt-1">48px / Bold</p>
+                </div>
+                <div className="bg-accent/10 p-4 rounded-lg">
+                  <p className="text-2xl font-bold text-foreground">Medium Title</p>
+                  <p className="text-xs text-muted-foreground mt-1">24px / Bold</p>
+                </div>
+                <div className="bg-accent/10 p-4 rounded-lg">
+                  <p className="text-lg text-foreground">Body Large</p>
+                  <p className="text-xs text-muted-foreground mt-1">18px / Regular</p>
+                </div>
+                <div className="bg-accent/10 p-4 rounded-lg">
+                  <p className="text-base text-foreground">Body Regular</p>
+                  <p className="text-xs text-muted-foreground mt-1">16px / Regular</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Visual Principles */}
+          <div className="bg-card p-6 rounded-xl shadow-md border border-border hover:shadow-lg transition-shadow">
+            <h4 className="font-bold text-xl text-foreground mb-4 flex items-center gap-2">
+              <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              Visual Design Principles
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-accent/10 p-5 rounded-lg border-l-4 border-primary">
+                <h5 className="font-semibold text-foreground mb-2">Clarity First</h5>
+                <p className="text-sm text-muted-foreground">
+                  Every visual element serves to simplify complex quantum concepts, making them immediately understandable.
+                </p>
+              </div>
+              <div className="bg-accent/10 p-5 rounded-lg border-l-4 border-primary">
+                <h5 className="font-semibold text-foreground mb-2">Data Visualization</h5>
+                <p className="text-sm text-muted-foreground">
+                  Clean, informative graphics that transform data into actionable insights with precision and elegance.
+                </p>
+              </div>
+              <div className="bg-accent/10 p-5 rounded-lg border-l-4 border-primary">
+                <h5 className="font-semibold text-foreground mb-2">Professional Warmth</h5>
+                <p className="text-sm text-muted-foreground">
+                  Balanced aesthetics that convey authority while remaining approachable and human-centered.
+                </p>
+              </div>
             </div>
           </div>
         </section>
