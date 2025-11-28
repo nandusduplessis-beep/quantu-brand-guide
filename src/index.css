@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 237 89% 6%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 237 89% 6%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 237 89% 6%;
+
+    --primary: 182 84% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 183 47% 68%;
+    --secondary-foreground: 237 89% 6%;
+
+    --muted: 183 19% 62%;
+    --muted-foreground: 237 30% 40%;
+
+    --accent: 183 47% 68%;
+    --accent-foreground: 237 89% 6%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 183 25% 90%;
+    --input: 183 25% 90%;
+    --ring: 182 84% 35%;
+
+    --radius: 0.75rem;
+
+    /* Quantum Insider Brand Colors */
+    --quantum-dark: 237 89% 6%;
+    --quantum-teal: 182 84% 35%;
+    --quantum-light-teal: 183 47% 68%;
+    --quantum-muted: 183 19% 62%;
+    
+    /* Gradients */
+    --gradient-quantum: linear-gradient(135deg, hsl(182 84% 35%), hsl(183 47% 68%));
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(183 47% 95%));
+    
+    /* Shadows */
+    --shadow-quantum: 0 10px 40px -10px hsl(182 84% 35% / 0.3);
+    --shadow-soft: 0 4px 20px -4px hsl(237 89% 6% / 0.1);
+    
+    /* Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    --background: 237 89% 6%;
+    --foreground: 0 0% 98%;
+
+    --card: 237 70% 10%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 237 70% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 183 47% 68%;
+    --primary-foreground: 237 89% 6%;
+
+    --secondary: 237 50% 15%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 237 50% 15%;
+    --muted-foreground: 183 19% 62%;
+
+    --accent: 182 84% 35%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 237 50% 20%;
+    --input: 237 50% 20%;
+    --ring: 183 47% 68%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
