@@ -4,6 +4,7 @@ import BrandCampaign from "@/components/BrandCampaign";
 import CollectiveImpact from "@/components/CollectiveImpact";
 import { EmailPopup } from "@/components/EmailPopup";
 import { useToast } from "@/hooks/use-toast";
+import { Copy, Sparkles } from "lucide-react";
 import quantumLogo from "@/assets/quantum-logo.png";
 import iconMarketIntelligence from "@/assets/icon-market-intelligence.png";
 import iconEcosystem from "@/assets/icon-ecosystem.png";
@@ -45,6 +46,73 @@ const Index = () => {
     toast({
       title: "Color copied!",
       description: `${name} (${color}) copied to clipboard`,
+    });
+  };
+
+  const generateLovablePrompt = () => {
+    const prompt = `# The Quantum Insider (TQI) Brand Guidelines for Lovable
+
+## Brand Identity
+TQI delivers actionable market intelligence for deep tech decision-makers, providing clarity and confidence for quantum technology decisions. We are powered by Resonance.
+
+**Purpose:** Empowering quantum tech advancement by making market intelligence accessible and understandable.
+
+**Tagline:** "Actionable quantum intelligence and bespoke solutions — empowering confident decisions that move the industry forward."
+
+## Brand Archetypes
+**Primary: The Sage** - Help the world make sense of complexity. Voice is calm, informed, analytical. Clarifies, contextualizes, connects dots. Acts as mentor and guide.
+
+**Secondary: The Explorer** - Expand horizons and move industries forward. Voice is confident, energizing, forward-leaning. Inspires, accelerates, enables action. Acts as catalyst and partner.
+
+## Core Values
+- **Accessible:** Make complex quantum intelligence understandable for all audiences
+- **Data-Driven:** Ground every insight in verified data and expert analysis
+- **Enable:** Empower decision-makers to act with confidence
+
+## Visual Identity
+
+### Colors (use these exact values)
+- **Quantum Teal (Primary):** #0aa0ab - HSL: 184 86% 36%
+- **Deep Navy (Background):** #040620 - HSL: 233 77% 7%
+- **Cool Gray (Neutral):** #bec1c9 - HSL: 223 12% 77%
+- **Resonance Blue (Accent):** #0014f0 - HSL: 234 100% 47%
+
+### Typography
+- **Font Family:** Roboto (Google Fonts)
+- **Headings:** Bold weight, clean and authoritative
+- **Body:** Regular weight, highly readable
+
+### Design Principles
+1. **Clarity First:** Information hierarchy is paramount. Use whitespace generously.
+2. **Data Visualization:** Present complex data beautifully and accessibly.
+3. **Professional Warmth:** Balance authority with approachability.
+
+## Tone Guidelines
+- Be accessible and clear
+- Be data-driven and insightful
+- Be enabling and forward-thinking
+- Every message empowers audiences with knowledge that drives innovation
+
+## Six Core Solutions
+1. **Quantum Market Intelligence** - Real-time data and analysis
+2. **Ecosystem Mapping** - Industry landscape visualization
+3. **Advisory Services** - Strategic guidance
+4. **Due Diligence** - Investment validation
+5. **Campaigns** - Marketing and awareness
+6. **News & Media** - Industry journalism
+
+## Implementation Notes
+- Use semantic color tokens, not hardcoded colors
+- Maintain consistent spacing and typography scale
+- Ensure responsive design across all devices
+- Use subtle animations for engagement (fade-ins, smooth transitions)
+- Cards should have subtle borders and hover states
+- Gradients should blend Quantum Teal with Deep Navy for hero sections`;
+
+    navigator.clipboard.writeText(prompt);
+    toast({
+      title: "Prompt copied!",
+      description: "Brand guidelines prompt copied to clipboard. Paste it into Lovable to provide context.",
     });
   };
 
@@ -160,9 +228,20 @@ const Index = () => {
         <section className="text-center mb-16 animate-fade-in">
           <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">Interactive Brand Framework</h2>
           <p
-            className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground"
+            className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8"
             dangerouslySetInnerHTML={{ __html: appData.definitions.intro }}
           />
+          <button
+            onClick={generateLovablePrompt}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+          >
+            <Sparkles className="w-5 h-5" />
+            Generate Lovable Prompt
+            <Copy className="w-4 h-4 ml-1" />
+          </button>
+          <p className="text-sm text-muted-foreground mt-3">
+            Copy brand guidelines to paste into Lovable for consistent product design
+          </p>
         </section>
 
         {/* Section 1: Core Identity */}
