@@ -1,19 +1,16 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp, Plus, X, HelpCircle, Calendar, Upload, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import quantumLogo from "@/assets/quantum-logo.png";
 
@@ -32,311 +29,174 @@ interface FrameworkSelection {
 interface CampaignBrief {
   campaignName: string;
   objective: string;
-  audience: string;
+  selectedICPs: string[];
   consumerTakeout: string;
   jobToBeDone: string;
+  insight: string;
+  whyDoingCampaign: string;
+  additionalInfo: string;
   campaignType: "demand" | "lead" | "";
   budgetLevel: string;
-  blogToVideo: boolean;
+  contentSourceType: "url" | "upload" | "";
+  contentSourceUrl: string;
+  referenceUrls: string[];
+  campaignPeriodType: "dates" | "duration" | "";
+  startDate: string;
+  endDate: string;
+  duration: string;
 }
 
 const frameworkElements = [
-  { key: "purpose", label: "Purpose" },
-  { key: "brandArchetypes", label: "Brand Archetypes" },
-  { key: "toneBehavior", label: "Tone & Behavior" },
-  { key: "communicationPrinciples", label: "Communication Principles" },
-  { key: "visualIdentity", label: "Visual Identity" },
-  { key: "coreValues", label: "Core Values" },
-  { key: "solutionsOfferings", label: "Solutions & Offerings" },
+  { key: "purpose", label: "Purpose", tooltip: "Your brand's core reason for being." },
+  { key: "brandArchetypes", label: "Brand Archetypes", tooltip: "Sage wisdom meets Explorer momentum." },
+  { key: "toneBehavior", label: "Tone & Behavior", tooltip: "How we speak and act." },
+  { key: "communicationPrinciples", label: "Communication Principles", tooltip: "Be accessible, data-driven, enabling." },
+  { key: "visualIdentity", label: "Visual Identity", tooltip: "Quantum teal gradients and clean typography." },
+  { key: "coreValues", label: "Core Values", tooltip: "Accessible, Data-Driven, Enable." },
+  { key: "solutionsOfferings", label: "Solutions & Offerings", tooltip: "Six core solutions." },
 ] as const;
+
+const icpOptions = [
+  { id: "investors", label: "Investors & VCs", description: "Venture capitalists and quantum tech investors" },
+  { id: "enterprise", label: "Enterprise Decision Makers", description: "CTOs, CIOs, and technology leaders" },
+  { id: "researchers", label: "Research & Academia", description: "Scientists and research institutions" },
+  { id: "startups", label: "Quantum Startups", description: "Emerging quantum technology companies" },
+  { id: "government", label: "Government & Policy", description: "Public sector and regulatory bodies" },
+];
+
+const fieldTooltips = {
+  campaignName: { tip: "A memorable name that captures the essence.", example: "e.g., 'Q1 Quantum Awareness Push'" },
+  objective: { tip: "The primary goal—be specific and measurable.", example: "e.g., 'Generate 50 qualified leads by Q2'" },
+  consumerTakeout: { tip: "The single thought they should remember.", example: "e.g., 'TQI is the most trusted source'" },
+  jobToBeDone: { tip: "The task your campaign helps accomplish.", example: "e.g., 'Help investors validate investments'" },
+  insight: { tip: "The key observation driving this campaign.", example: "e.g., 'Decision-makers lack reliable data'" },
+  whyDoingCampaign: { tip: "The strategic reason for launching now.", example: "e.g., 'Capitalize on growing interest'" },
+  additionalInfo: { tip: "Any other context or ideas.", example: "e.g., 'Align with upcoming conference'" },
+  contentSource: { tip: "Primary content that will fuel this campaign.", example: "Paste a URL or upload a document" },
+  references: { tip: "Optional inspiration or reference materials.", example: "Competitor campaigns, design references" },
+};
 
 const CampaignInput = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [brandFocusOpen, setBrandFocusOpen] = useState(false);
+  const [allICPs, setAllICPs] = useState(true);
 
   const [frameworkSelection, setFrameworkSelection] = useState<FrameworkSelection>({
-    purpose: "use",
-    brandArchetypes: "use",
-    toneBehavior: "use",
-    communicationPrinciples: "use",
-    visualIdentity: "use",
-    coreValues: "use",
-    solutionsOfferings: "use",
+    purpose: "use", brandArchetypes: "use", toneBehavior: "use", communicationPrinciples: "use",
+    visualIdentity: "use", coreValues: "use", solutionsOfferings: "use",
   });
 
   const [brief, setBrief] = useState<CampaignBrief>({
-    campaignName: "",
-    objective: "",
-    audience: "",
-    consumerTakeout: "",
-    jobToBeDone: "",
-    campaignType: "",
-    budgetLevel: "",
-    blogToVideo: false,
+    campaignName: "", objective: "", selectedICPs: [], consumerTakeout: "", jobToBeDone: "",
+    insight: "", whyDoingCampaign: "", additionalInfo: "", campaignType: "", budgetLevel: "",
+    contentSourceType: "", contentSourceUrl: "", referenceUrls: [""], campaignPeriodType: "",
+    startDate: "", endDate: "", duration: "",
   });
 
-  const handleFrameworkChange = (key: keyof FrameworkSelection, value: FrameworkOption) => {
-    setFrameworkSelection((prev) => ({ ...prev, [key]: value }));
+  const handleFrameworkChange = (key: keyof FrameworkSelection, value: FrameworkOption) => setFrameworkSelection((prev) => ({ ...prev, [key]: value }));
+  const handleBriefChange = (key: keyof CampaignBrief, value: string | boolean | string[]) => setBrief((prev) => ({ ...prev, [key]: value }));
+  const handleICPToggle = (icpId: string) => {
+    const newSelection = brief.selectedICPs.includes(icpId) ? brief.selectedICPs.filter((id) => id !== icpId) : [...brief.selectedICPs, icpId];
+    handleBriefChange("selectedICPs", newSelection);
   };
-
-  const handleBriefChange = (key: keyof CampaignBrief, value: string | boolean) => {
-    setBrief((prev) => ({ ...prev, [key]: value }));
-  };
+  const addReferenceUrl = () => handleBriefChange("referenceUrls", [...brief.referenceUrls, ""]);
+  const updateReferenceUrl = (index: number, value: string) => { const newUrls = [...brief.referenceUrls]; newUrls[index] = value; handleBriefChange("referenceUrls", newUrls); };
+  const removeReferenceUrl = (index: number) => { const newUrls = brief.referenceUrls.filter((_, i) => i !== index); handleBriefChange("referenceUrls", newUrls.length > 0 ? newUrls : [""]); };
 
   const validateAndContinue = () => {
-    const requiredFields: { key: keyof CampaignBrief; label: string }[] = [
-      { key: "campaignName", label: "Campaign name" },
-      { key: "objective", label: "Objective" },
-      { key: "audience", label: "Audience / ICP" },
-      { key: "campaignType", label: "Campaign type" },
-      { key: "budgetLevel", label: "Budget level" },
-    ];
-
-    const missingFields = requiredFields.filter((field) => !brief[field.key]);
-
-    if (missingFields.length > 0) {
-      toast({
-        title: "Missing required fields",
-        description: `Please fill in: ${missingFields.map((f) => f.label).join(", ")}`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    navigate("/campaign/ideas", {
-      state: { frameworkSelection, brief },
-    });
+    const requiredFields = [{ key: "campaignName" as const, label: "Campaign name" }, { key: "objective" as const, label: "Objective" }, { key: "campaignType" as const, label: "Campaign type" }, { key: "budgetLevel" as const, label: "Budget level" }];
+    const missingFields = requiredFields.filter((f) => !brief[f.key]);
+    if (!allICPs && brief.selectedICPs.length === 0) missingFields.push({ key: "selectedICPs" as any, label: "Target ICP selection" });
+    if (missingFields.length > 0) { toast({ title: "Please complete required fields", description: missingFields.map((f) => f.label).join(", "), variant: "destructive" }); return; }
+    navigate("/campaign/ideas", { state: { frameworkSelection, brief: { ...brief, selectedICPs: allICPs ? ["all"] : brief.selectedICPs } } });
   };
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border shadow-sm">
-        <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <Link to="/">
-                <img src={quantumLogo} alt="The Quantum Insider" className="h-8 md:h-10" />
-              </Link>
-            </div>
-            <Link
-              to="/"
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Brand Framework
-            </Link>
-          </div>
-        </nav>
-      </header>
-
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 max-w-4xl">
-        {/* Intro */}
-        <section className="text-center mb-12 animate-fade-in">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Campaign Input
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Start a new campaign using your brand framework. Choose which parts of the framework
-            to use, emphasise, or ignore for this campaign.
-          </p>
-        </section>
-
-        {/* Section A: Brand Framework Selection */}
-        <section className="mb-12">
-          <h2 className="text-xl md:text-2xl font-bold text-foreground border-l-4 border-primary pl-4 mb-6">
-            A. Brand Framework Selection
-          </h2>
-          <div className="bg-card rounded-xl border border-border p-6 shadow-md">
-            <div className="space-y-4">
-              {frameworkElements.map((element) => (
-                <div
-                  key={element.key}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 border-b border-border last:border-b-0"
-                >
-                  <Label className="font-medium text-foreground min-w-[200px]">
-                    {element.label}
-                  </Label>
-                  <RadioGroup
-                    value={frameworkSelection[element.key]}
-                    onValueChange={(value) =>
-                      handleFrameworkChange(element.key, value as FrameworkOption)
-                    }
-                    className="flex flex-wrap gap-2 sm:gap-4"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="use" id={`${element.key}-use`} />
-                      <Label htmlFor={`${element.key}-use`} className="text-sm cursor-pointer">
-                        Use as normal
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="emphasise" id={`${element.key}-emphasise`} />
-                      <Label
-                        htmlFor={`${element.key}-emphasise`}
-                        className="text-sm cursor-pointer"
-                      >
-                        Emphasise / focus this
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="ignore" id={`${element.key}-ignore`} />
-                      <Label htmlFor={`${element.key}-ignore`} className="text-sm cursor-pointer">
-                        Do not use
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Section B: Campaign Brief Basics */}
-        <section className="mb-12">
-          <h2 className="text-xl md:text-2xl font-bold text-foreground border-l-4 border-primary pl-4 mb-6">
-            B. Campaign Brief Basics
-          </h2>
-          <div className="bg-card rounded-xl border border-border p-6 shadow-md space-y-6">
-            {/* Campaign Name */}
-            <div className="space-y-2">
-              <Label htmlFor="campaignName" className="font-medium">
-                Campaign name <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="campaignName"
-                placeholder="Enter campaign name"
-                value={brief.campaignName}
-                onChange={(e) => handleBriefChange("campaignName", e.target.value)}
-              />
-            </div>
-
-            {/* Objective */}
-            <div className="space-y-2">
-              <Label htmlFor="objective" className="font-medium">
-                Objective <span className="text-destructive">*</span>
-              </Label>
-              <Textarea
-                id="objective"
-                placeholder="What is the primary goal of this campaign?"
-                value={brief.objective}
-                onChange={(e) => handleBriefChange("objective", e.target.value)}
-                rows={3}
-              />
-            </div>
-
-            {/* Audience / ICP */}
-            <div className="space-y-2">
-              <Label htmlFor="audience" className="font-medium">
-                Audience / ICP <span className="text-destructive">*</span>
-              </Label>
-              <Textarea
-                id="audience"
-                placeholder="Who is the target audience for this campaign?"
-                value={brief.audience}
-                onChange={(e) => handleBriefChange("audience", e.target.value)}
-                rows={3}
-              />
-            </div>
-
-            {/* Consumer Takeout */}
-            <div className="space-y-2">
-              <Label htmlFor="consumerTakeout" className="font-medium">
-                Consumer takeout
-              </Label>
-              <Input
-                id="consumerTakeout"
-                placeholder="What should the audience think or feel after seeing this?"
-                value={brief.consumerTakeout}
-                onChange={(e) => handleBriefChange("consumerTakeout", e.target.value)}
-              />
-            </div>
-
-            {/* Job to be Done */}
-            <div className="space-y-2">
-              <Label htmlFor="jobToBeDone" className="font-medium">
-                Job to be done
-              </Label>
-              <Textarea
-                id="jobToBeDone"
-                placeholder="What task or problem does this campaign help the audience accomplish?"
-                value={brief.jobToBeDone}
-                onChange={(e) => handleBriefChange("jobToBeDone", e.target.value)}
-                rows={3}
-              />
-            </div>
-
-            {/* Campaign Type */}
-            <div className="space-y-2">
-              <Label className="font-medium">
-                Campaign type <span className="text-destructive">*</span>
-              </Label>
-              <RadioGroup
-                value={brief.campaignType}
-                onValueChange={(value) => handleBriefChange("campaignType", value)}
-                className="flex flex-col sm:flex-row gap-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="demand" id="type-demand" />
-                  <Label htmlFor="type-demand" className="cursor-pointer">
-                    Demand generation
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="lead" id="type-lead" />
-                  <Label htmlFor="type-lead" className="cursor-pointer">
-                    Lead generation
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            {/* Budget Level */}
-            <div className="space-y-2">
-              <Label htmlFor="budgetLevel" className="font-medium">
-                Budget level <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={brief.budgetLevel}
-                onValueChange={(value) => handleBriefChange("budgetLevel", value)}
-              >
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue placeholder="Select budget" />
-                </SelectTrigger>
-                <SelectContent className="bg-card">
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Blog to Video */}
-            <div className="flex items-center justify-between py-2">
-              <Label htmlFor="blogToVideo" className="font-medium cursor-pointer">
-                Blog-to-video?
-              </Label>
-              <Switch
-                id="blogToVideo"
-                checked={brief.blogToVideo}
-                onCheckedChange={(checked) => handleBriefChange("blogToVideo", checked)}
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Continue Button */}
-        <div className="flex justify-center">
-          <Button
-            onClick={validateAndContinue}
-            size="lg"
-            className="px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
-          >
-            Continue to idea generation
-          </Button>
-        </div>
-      </main>
+  const TooltipLabel = ({ label, required, tooltipKey }: { label: string; required?: boolean; tooltipKey: keyof typeof fieldTooltips }) => (
+    <div className="flex items-center gap-2">
+      <Label className="font-medium text-white/90">{label} {required && <span className="text-cyan-300">*</span>}</Label>
+      <Tooltip><TooltipTrigger asChild><HelpCircle className="w-4 h-4 text-cyan-400/60 hover:text-cyan-300 cursor-help" /></TooltipTrigger>
+        <TooltipContent className="max-w-xs bg-slate-800 border-cyan-500/30 text-white"><p className="font-medium mb-1">{fieldTooltips[tooltipKey].tip}</p><p className="text-cyan-300 text-xs">{fieldTooltips[tooltipKey].example}</p></TooltipContent></Tooltip>
     </div>
+  );
+
+  return (
+    <TooltipProvider>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900">
+        <header className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-lg border-b border-cyan-500/20">
+          <nav className="container mx-auto px-4 sm:px-6 lg:px-8"><div className="flex items-center justify-between h-14">
+            <Link to="/"><img src={quantumLogo} alt="TQI" className="h-7" /></Link>
+            <Link to="/" className="flex items-center gap-2 text-cyan-300 hover:text-white text-sm"><ArrowLeft className="w-4 h-4" />Back to Framework</Link>
+          </div></nav>
+        </header>
+
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-6xl">
+          <section className="text-center mb-6"><h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Let's craft your next campaign</h1><p className="text-cyan-200/80 max-w-2xl mx-auto text-sm">Your brand framework powers the intelligence behind every idea.</p></section>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-4">
+              {/* Campaign Essentials */}
+              <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 p-5 backdrop-blur-sm">
+                <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-cyan-500 text-slate-900 text-xs font-bold flex items-center justify-center">1</span>Campaign Essentials</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5"><TooltipLabel label="Campaign Name" required tooltipKey="campaignName" /><Input placeholder="e.g., Q1 Quantum Awareness Push" value={brief.campaignName} onChange={(e) => handleBriefChange("campaignName", e.target.value)} className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400" /></div>
+                  <div className="space-y-1.5"><Label className="font-medium text-white/90">Campaign Type <span className="text-cyan-300">*</span></Label><RadioGroup value={brief.campaignType} onValueChange={(v) => handleBriefChange("campaignType", v)} className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="demand" id="type-demand" className="border-cyan-500/50 text-cyan-400" /><Label htmlFor="type-demand" className="cursor-pointer text-white/80 text-sm">Demand gen</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="lead" id="type-lead" className="border-cyan-500/50 text-cyan-400" /><Label htmlFor="type-lead" className="cursor-pointer text-white/80 text-sm">Lead gen</Label></div></RadioGroup></div>
+                  <div className="space-y-1.5"><Label className="font-medium text-white/90">Budget Level <span className="text-cyan-300">*</span></Label><Select value={brief.budgetLevel} onValueChange={(v) => handleBriefChange("budgetLevel", v)}><SelectTrigger className="bg-slate-700/50 border-cyan-500/30 text-white"><SelectValue placeholder="Select budget" /></SelectTrigger><SelectContent className="bg-slate-800 border-cyan-500/30"><SelectItem value="low" className="text-white hover:bg-cyan-500/20">Low</SelectItem><SelectItem value="medium" className="text-white hover:bg-cyan-500/20">Medium</SelectItem><SelectItem value="high" className="text-white hover:bg-cyan-500/20">High</SelectItem></SelectContent></Select></div>
+                  <div className="space-y-1.5"><Label className="font-medium text-white/90 flex items-center gap-2"><Calendar className="w-4 h-4 text-cyan-400" />Campaign Period <span className="text-slate-500 text-xs">(optional)</span></Label><Select value={brief.campaignPeriodType} onValueChange={(v) => handleBriefChange("campaignPeriodType", v)}><SelectTrigger className="bg-slate-700/50 border-cyan-500/30 text-white"><SelectValue placeholder="Select period type" /></SelectTrigger><SelectContent className="bg-slate-800 border-cyan-500/30"><SelectItem value="dates" className="text-white hover:bg-cyan-500/20">Specific dates</SelectItem><SelectItem value="duration" className="text-white hover:bg-cyan-500/20">Duration length</SelectItem></SelectContent></Select></div>
+                  {brief.campaignPeriodType === "dates" && <><div className="space-y-1.5"><Label className="font-medium text-white/90 text-sm">Start Date</Label><Input type="date" value={brief.startDate} onChange={(e) => handleBriefChange("startDate", e.target.value)} className="bg-slate-700/50 border-cyan-500/30 text-white" /></div><div className="space-y-1.5"><Label className="font-medium text-white/90 text-sm">End Date</Label><Input type="date" value={brief.endDate} onChange={(e) => handleBriefChange("endDate", e.target.value)} className="bg-slate-700/50 border-cyan-500/30 text-white" /></div></>}
+                  {brief.campaignPeriodType === "duration" && <div className="space-y-1.5 md:col-span-2"><Label className="font-medium text-white/90 text-sm">Duration</Label><Select value={brief.duration} onValueChange={(v) => handleBriefChange("duration", v)}><SelectTrigger className="bg-slate-700/50 border-cyan-500/30 text-white w-full md:w-48"><SelectValue placeholder="Select duration" /></SelectTrigger><SelectContent className="bg-slate-800 border-cyan-500/30"><SelectItem value="1-week" className="text-white hover:bg-cyan-500/20">1 week</SelectItem><SelectItem value="2-weeks" className="text-white hover:bg-cyan-500/20">2 weeks</SelectItem><SelectItem value="1-month" className="text-white hover:bg-cyan-500/20">1 month</SelectItem><SelectItem value="3-months" className="text-white hover:bg-cyan-500/20">3 months</SelectItem><SelectItem value="6-months" className="text-white hover:bg-cyan-500/20">6 months</SelectItem><SelectItem value="ongoing" className="text-white hover:bg-cyan-500/20">Ongoing</SelectItem></SelectContent></Select></div>}
+                </div>
+                <div className="space-y-1.5 mt-4"><TooltipLabel label="Objective" required tooltipKey="objective" /><Textarea placeholder="e.g., Generate 50 qualified leads from enterprise CTOs by end of Q2" value={brief.objective} onChange={(e) => handleBriefChange("objective", e.target.value)} rows={2} className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400" /></div>
+              </div>
+
+              {/* Target Audience */}
+              <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 p-5 backdrop-blur-sm">
+                <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-cyan-500 text-slate-900 text-xs font-bold flex items-center justify-center">2</span>Target Audience</h2>
+                <div className="flex items-center gap-3 mb-4"><Switch checked={allICPs} onCheckedChange={setAllICPs} className="data-[state=checked]:bg-cyan-500" /><Label className="text-white/90 text-sm">Target all ICPs</Label></div>
+                {!allICPs && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{icpOptions.map((icp) => (<div key={icp.id} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${brief.selectedICPs.includes(icp.id) ? "bg-cyan-500/20 border-cyan-400" : "bg-slate-700/30 border-slate-600 hover:border-cyan-500/50"}`} onClick={() => handleICPToggle(icp.id)}><Checkbox checked={brief.selectedICPs.includes(icp.id)} className="mt-0.5 border-cyan-500/50 data-[state=checked]:bg-cyan-500" /><div><p className="text-white text-sm font-medium">{icp.label}</p><p className="text-slate-400 text-xs">{icp.description}</p></div></div>))}</div>}
+              </div>
+
+              {/* Strategic Context */}
+              <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 p-5 backdrop-blur-sm">
+                <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-cyan-500 text-slate-900 text-xs font-bold flex items-center justify-center">3</span>Strategic Context</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5"><TooltipLabel label="Consumer Takeout" tooltipKey="consumerTakeout" /><Input placeholder="The single thought they should remember..." value={brief.consumerTakeout} onChange={(e) => handleBriefChange("consumerTakeout", e.target.value)} className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400" /></div>
+                  <div className="space-y-1.5"><TooltipLabel label="Key Insight" tooltipKey="insight" /><Input placeholder="The observation driving this campaign..." value={brief.insight} onChange={(e) => handleBriefChange("insight", e.target.value)} className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400" /></div>
+                  <div className="space-y-1.5 md:col-span-2"><TooltipLabel label="Job to be Done" tooltipKey="jobToBeDone" /><Textarea placeholder="What task or problem does this campaign help accomplish?" value={brief.jobToBeDone} onChange={(e) => handleBriefChange("jobToBeDone", e.target.value)} rows={2} className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400" /></div>
+                  <div className="space-y-1.5 md:col-span-2"><TooltipLabel label="Why Are We Doing This Campaign?" tooltipKey="whyDoingCampaign" /><Textarea placeholder="The strategic reason for launching this campaign now..." value={brief.whyDoingCampaign} onChange={(e) => handleBriefChange("whyDoingCampaign", e.target.value)} rows={2} className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400" /></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-4">
+              {/* Content Source */}
+              <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 p-5 backdrop-blur-sm">
+                <div className="flex items-start gap-2 mb-3"><h3 className="text-sm font-semibold text-white">Campaign Content Source</h3><Tooltip><TooltipTrigger asChild><HelpCircle className="w-4 h-4 text-cyan-400/60 hover:text-cyan-300 cursor-help" /></TooltipTrigger><TooltipContent className="max-w-xs bg-slate-800 border-cyan-500/30 text-white"><p className="font-medium mb-1">{fieldTooltips.contentSource.tip}</p><p className="text-cyan-300 text-xs">{fieldTooltips.contentSource.example}</p></TooltipContent></Tooltip></div>
+                <div className="flex gap-2 mb-3"><button onClick={() => handleBriefChange("contentSourceType", "url")} className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${brief.contentSourceType === "url" ? "bg-cyan-500 text-slate-900" : "bg-slate-700/50 text-white/70 hover:bg-slate-700"}`}><LinkIcon className="w-4 h-4" />URL</button><button onClick={() => handleBriefChange("contentSourceType", "upload")} className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${brief.contentSourceType === "upload" ? "bg-cyan-500 text-slate-900" : "bg-slate-700/50 text-white/70 hover:bg-slate-700"}`}><Upload className="w-4 h-4" />Upload</button></div>
+                {brief.contentSourceType === "url" && <Input placeholder="https://blog.quantuminsider.com/..." value={brief.contentSourceUrl} onChange={(e) => handleBriefChange("contentSourceUrl", e.target.value)} className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400" />}
+                {brief.contentSourceType === "upload" && <div className="border-2 border-dashed border-cyan-500/30 rounded-lg p-4 text-center hover:border-cyan-400/50 transition-colors cursor-pointer"><Upload className="w-6 h-6 text-cyan-400 mx-auto mb-2" /><p className="text-white/70 text-xs">Click to upload or drag & drop</p><p className="text-slate-500 text-xs mt-1">PDF, DOC, images, video</p></div>}
+              </div>
+
+              {/* References */}
+              <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 p-5 backdrop-blur-sm">
+                <div className="flex items-start gap-2 mb-3"><h3 className="text-sm font-semibold text-white">Reference Materials</h3><span className="text-slate-500 text-xs">(optional)</span><Tooltip><TooltipTrigger asChild><HelpCircle className="w-4 h-4 text-cyan-400/60 hover:text-cyan-300 cursor-help ml-auto" /></TooltipTrigger><TooltipContent className="max-w-xs bg-slate-800 border-cyan-500/30 text-white"><p className="font-medium mb-1">{fieldTooltips.references.tip}</p><p className="text-cyan-300 text-xs">{fieldTooltips.references.example}</p></TooltipContent></Tooltip></div>
+                <div className="space-y-2">{brief.referenceUrls.map((url, i) => (<div key={i} className="flex gap-2"><Input placeholder="https://..." value={url} onChange={(e) => updateReferenceUrl(i, e.target.value)} className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 text-sm" />{brief.referenceUrls.length > 1 && <button onClick={() => removeReferenceUrl(i)} className="p-2 text-slate-400 hover:text-red-400 transition-colors"><X className="w-4 h-4" /></button>}</div>))}<button onClick={addReferenceUrl} className="flex items-center gap-1 text-cyan-400 hover:text-cyan-300 text-sm transition-colors"><Plus className="w-4 h-4" />Add URL</button></div>
+                <div className="border-2 border-dashed border-cyan-500/30 rounded-lg p-3 text-center hover:border-cyan-400/50 transition-colors cursor-pointer mt-3"><Upload className="w-5 h-5 text-cyan-400 mx-auto mb-1" /><p className="text-white/70 text-xs">Upload files</p></div>
+              </div>
+
+              {/* Additional Info */}
+              <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 p-5 backdrop-blur-sm"><TooltipLabel label="Additional Information" tooltipKey="additionalInfo" /><Textarea placeholder="Any other context, constraints, or creative ideas..." value={brief.additionalInfo} onChange={(e) => handleBriefChange("additionalInfo", e.target.value)} rows={3} className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 mt-2" /></div>
+
+              {/* Brand Focus */}
+              <Collapsible open={brandFocusOpen} onOpenChange={setBrandFocusOpen}><CollapsibleTrigger asChild><button className="w-full flex items-center justify-between bg-slate-800/60 rounded-xl border border-cyan-500/20 p-4 text-left hover:bg-slate-800/80 transition-colors"><span className="text-sm font-semibold text-white">Adjust Brand Focus</span>{brandFocusOpen ? <ChevronUp className="w-5 h-5 text-cyan-400" /> : <ChevronDown className="w-5 h-5 text-cyan-400" />}</button></CollapsibleTrigger><CollapsibleContent className="mt-2"><div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 p-4 space-y-3">{frameworkElements.map((el) => (<div key={el.key} className="flex items-center justify-between gap-2"><div className="flex items-center gap-2"><span className="text-white/80 text-xs">{el.label}</span><Tooltip><TooltipTrigger asChild><HelpCircle className="w-3 h-3 text-cyan-400/50 hover:text-cyan-300 cursor-help" /></TooltipTrigger><TooltipContent className="max-w-xs bg-slate-800 border-cyan-500/30 text-white text-xs">{el.tooltip}</TooltipContent></Tooltip></div><Select value={frameworkSelection[el.key]} onValueChange={(v) => handleFrameworkChange(el.key, v as FrameworkOption)}><SelectTrigger className="w-28 h-7 bg-slate-700/50 border-cyan-500/30 text-white text-xs"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-800 border-cyan-500/30"><SelectItem value="use" className="text-white text-xs hover:bg-cyan-500/20">Use</SelectItem><SelectItem value="emphasise" className="text-white text-xs hover:bg-cyan-500/20">Emphasise</SelectItem><SelectItem value="ignore" className="text-white text-xs hover:bg-cyan-500/20">Ignore</SelectItem></SelectContent></Select></div>))}</div></CollapsibleContent></Collapsible>
+            </div>
+          </div>
+
+          <div className="flex justify-center mt-8"><Button onClick={validateAndContinue} size="lg" className="px-10 py-4 text-base font-semibold bg-gradient-to-r from-cyan-500 to-cyan-400 text-slate-900 hover:from-cyan-400 hover:to-cyan-300 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-400/40 hover:scale-105 transition-all duration-300">Continue to idea generation</Button></div>
+        </main>
+      </div>
+    </TooltipProvider>
   );
 };
 
