@@ -59,10 +59,12 @@ TQI delivers actionable market intelligence for deep tech decision-makers, provi
 
 **Tagline:** "Actionable quantum intelligence and bespoke solutions — empowering confident decisions that move the industry forward."
 
-## Brand Archetypes
-**Primary: The Sage** - Help the world make sense of complexity. Voice is calm, informed, analytical. Clarifies, contextualizes, connects dots. Acts as mentor and guide.
+## Brand Archetypes (Guiding Reference)
+These archetypes inform tone and approach but are not requirements to explicitly reference:
 
-**Secondary: The Explorer** - Expand horizons and move industries forward. Voice is confident, energizing, forward-leaning. Inspires, accelerates, enables action. Acts as catalyst and partner.
+**Primary: The Sage** - Guides the overall voice: calm, informed, analytical. Helps clarify and contextualize complex topics.
+
+**Secondary: The Explorer** - Adds energy and forward momentum. Encourages confidence and action.
 
 ## Core Values
 - **Accessible:** Make complex quantum intelligence understandable for all audiences
