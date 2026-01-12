@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
+import FileUpload from "@/components/FileUpload";
 import quantumLogo from "@/assets/quantum-logo.png";
 
 type FrameworkOption = "use" | "emphasise" | "ignore";
@@ -24,6 +25,13 @@ interface FrameworkSelection {
   visualIdentity: FrameworkOption;
   coreValues: FrameworkOption;
   solutionsOfferings: FrameworkOption;
+}
+
+interface UploadedFile {
+  name: string;
+  url: string;
+  type: string;
+  size: number;
 }
 
 interface CampaignBrief {
@@ -39,7 +47,9 @@ interface CampaignBrief {
   budgetLevel: string;
   contentSourceType: "url" | "upload" | "";
   contentSourceUrl: string;
+  contentSourceFiles: UploadedFile[];
   referenceUrls: string[];
+  referenceFiles: UploadedFile[];
   campaignPeriodType: "dates" | "duration" | "";
   startDate: string;
   endDate: string;
@@ -90,12 +100,12 @@ const CampaignInput = () => {
   const [brief, setBrief] = useState<CampaignBrief>({
     campaignName: "", objective: "", selectedICPs: [], consumerTakeout: "", jobToBeDone: "",
     insight: "", whyDoingCampaign: "", additionalInfo: "", campaignType: "", budgetLevel: "",
-    contentSourceType: "", contentSourceUrl: "", referenceUrls: [""], campaignPeriodType: "",
-    startDate: "", endDate: "", duration: "",
+    contentSourceType: "", contentSourceUrl: "", contentSourceFiles: [], referenceUrls: [""], referenceFiles: [],
+    campaignPeriodType: "", startDate: "", endDate: "", duration: "",
   });
 
   const handleFrameworkChange = (key: keyof FrameworkSelection, value: FrameworkOption) => setFrameworkSelection((prev) => ({ ...prev, [key]: value }));
-  const handleBriefChange = (key: keyof CampaignBrief, value: string | boolean | string[]) => setBrief((prev) => ({ ...prev, [key]: value }));
+  const handleBriefChange = (key: keyof CampaignBrief, value: string | boolean | string[] | UploadedFile[]) => setBrief((prev) => ({ ...prev, [key]: value }));
   const handleICPToggle = (icpId: string) => {
     const newSelection = brief.selectedICPs.includes(icpId) ? brief.selectedICPs.filter((id) => id !== icpId) : [...brief.selectedICPs, icpId];
     handleBriefChange("selectedICPs", newSelection);
@@ -172,28 +182,137 @@ const CampaignInput = () => {
             <div className="space-y-4">
               {/* Content Source */}
               <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 p-5 backdrop-blur-sm">
-                <div className="flex items-start gap-2 mb-3"><h3 className="text-sm font-semibold text-white">Campaign Content Source</h3><Tooltip><TooltipTrigger asChild><HelpCircle className="w-4 h-4 text-cyan-400/60 hover:text-cyan-300 cursor-help" /></TooltipTrigger><TooltipContent className="max-w-xs bg-slate-800 border-cyan-500/30 text-white"><p className="font-medium mb-1">{fieldTooltips.contentSource.tip}</p><p className="text-cyan-300 text-xs">{fieldTooltips.contentSource.example}</p></TooltipContent></Tooltip></div>
-                <div className="flex gap-2 mb-3"><button onClick={() => handleBriefChange("contentSourceType", "url")} className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${brief.contentSourceType === "url" ? "bg-cyan-500 text-slate-900" : "bg-slate-700/50 text-white/70 hover:bg-slate-700"}`}><LinkIcon className="w-4 h-4" />URL</button><button onClick={() => handleBriefChange("contentSourceType", "upload")} className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${brief.contentSourceType === "upload" ? "bg-cyan-500 text-slate-900" : "bg-slate-700/50 text-white/70 hover:bg-slate-700"}`}><Upload className="w-4 h-4" />Upload</button></div>
-                {brief.contentSourceType === "url" && <Input placeholder="https://blog.quantuminsider.com/..." value={brief.contentSourceUrl} onChange={(e) => handleBriefChange("contentSourceUrl", e.target.value)} className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400" />}
-                {brief.contentSourceType === "upload" && <div className="border-2 border-dashed border-cyan-500/30 rounded-lg p-4 text-center hover:border-cyan-400/50 transition-colors cursor-pointer"><Upload className="w-6 h-6 text-cyan-400 mx-auto mb-2" /><p className="text-white/70 text-xs">Click to upload or drag & drop</p><p className="text-slate-500 text-xs mt-1">PDF, DOC, images, video</p></div>}
+                <div className="flex items-start gap-2 mb-3">
+                  <h3 className="text-sm font-semibold text-white">Campaign Content Source</h3>
+                  <Tooltip>
+                    <TooltipTrigger asChild><HelpCircle className="w-4 h-4 text-cyan-400/60 hover:text-cyan-300 cursor-help" /></TooltipTrigger>
+                    <TooltipContent className="max-w-xs bg-slate-800 border-cyan-500/30 text-white">
+                      <p className="font-medium mb-1">{fieldTooltips.contentSource.tip}</p>
+                      <p className="text-cyan-300 text-xs">{fieldTooltips.contentSource.example}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <div className="flex gap-2 mb-3">
+                  <button onClick={() => handleBriefChange("contentSourceType", "url")} className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${brief.contentSourceType === "url" ? "bg-cyan-500 text-slate-900" : "bg-slate-700/50 text-white/70 hover:bg-slate-700"}`}>
+                    <LinkIcon className="w-4 h-4" />URL
+                  </button>
+                  <button onClick={() => handleBriefChange("contentSourceType", "upload")} className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${brief.contentSourceType === "upload" ? "bg-cyan-500 text-slate-900" : "bg-slate-700/50 text-white/70 hover:bg-slate-700"}`}>
+                    <Upload className="w-4 h-4" />Upload
+                  </button>
+                </div>
+                {brief.contentSourceType === "url" && (
+                  <Input 
+                    placeholder="https://blog.quantuminsider.com/..." 
+                    value={brief.contentSourceUrl} 
+                    onChange={(e) => handleBriefChange("contentSourceUrl", e.target.value)} 
+                    className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400" 
+                  />
+                )}
+                {brief.contentSourceType === "upload" && (
+                  <FileUpload
+                    files={brief.contentSourceFiles}
+                    onFilesChange={(files) => handleBriefChange("contentSourceFiles", files)}
+                    folder="content-source"
+                    multiple={false}
+                  />
+                )}
               </div>
 
               {/* References */}
               <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 p-5 backdrop-blur-sm">
-                <div className="flex items-start gap-2 mb-3"><h3 className="text-sm font-semibold text-white">Reference Materials</h3><span className="text-slate-500 text-xs">(optional)</span><Tooltip><TooltipTrigger asChild><HelpCircle className="w-4 h-4 text-cyan-400/60 hover:text-cyan-300 cursor-help ml-auto" /></TooltipTrigger><TooltipContent className="max-w-xs bg-slate-800 border-cyan-500/30 text-white"><p className="font-medium mb-1">{fieldTooltips.references.tip}</p><p className="text-cyan-300 text-xs">{fieldTooltips.references.example}</p></TooltipContent></Tooltip></div>
-                <div className="space-y-2">{brief.referenceUrls.map((url, i) => (<div key={i} className="flex gap-2"><Input placeholder="https://..." value={url} onChange={(e) => updateReferenceUrl(i, e.target.value)} className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 text-sm" />{brief.referenceUrls.length > 1 && <button onClick={() => removeReferenceUrl(i)} className="p-2 text-slate-400 hover:text-red-400 transition-colors"><X className="w-4 h-4" /></button>}</div>))}<button onClick={addReferenceUrl} className="flex items-center gap-1 text-cyan-400 hover:text-cyan-300 text-sm transition-colors"><Plus className="w-4 h-4" />Add URL</button></div>
-                <div className="border-2 border-dashed border-cyan-500/30 rounded-lg p-3 text-center hover:border-cyan-400/50 transition-colors cursor-pointer mt-3"><Upload className="w-5 h-5 text-cyan-400 mx-auto mb-1" /><p className="text-white/70 text-xs">Upload files</p></div>
+                <div className="flex items-start gap-2 mb-3">
+                  <h3 className="text-sm font-semibold text-white">Reference Materials</h3>
+                  <span className="text-slate-500 text-xs">(optional)</span>
+                  <Tooltip>
+                    <TooltipTrigger asChild><HelpCircle className="w-4 h-4 text-cyan-400/60 hover:text-cyan-300 cursor-help ml-auto" /></TooltipTrigger>
+                    <TooltipContent className="max-w-xs bg-slate-800 border-cyan-500/30 text-white">
+                      <p className="font-medium mb-1">{fieldTooltips.references.tip}</p>
+                      <p className="text-cyan-300 text-xs">{fieldTooltips.references.example}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <div className="space-y-2">
+                  {brief.referenceUrls.map((url, i) => (
+                    <div key={i} className="flex gap-2">
+                      <Input 
+                        placeholder="https://..." 
+                        value={url} 
+                        onChange={(e) => updateReferenceUrl(i, e.target.value)} 
+                        className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 text-sm" 
+                      />
+                      {brief.referenceUrls.length > 1 && (
+                        <button onClick={() => removeReferenceUrl(i)} className="p-2 text-slate-400 hover:text-red-400 transition-colors">
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button onClick={addReferenceUrl} className="flex items-center gap-1 text-cyan-400 hover:text-cyan-300 text-sm transition-colors">
+                    <Plus className="w-4 h-4" />Add URL
+                  </button>
+                </div>
+                <div className="mt-3">
+                  <FileUpload
+                    files={brief.referenceFiles}
+                    onFilesChange={(files) => handleBriefChange("referenceFiles", files)}
+                    folder="references"
+                    multiple={true}
+                  />
+                </div>
               </div>
 
               {/* Additional Info */}
-              <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 p-5 backdrop-blur-sm"><TooltipLabel label="Additional Information" tooltipKey="additionalInfo" /><Textarea placeholder="Any other context, constraints, or creative ideas..." value={brief.additionalInfo} onChange={(e) => handleBriefChange("additionalInfo", e.target.value)} rows={3} className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 mt-2" /></div>
+              <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 p-5 backdrop-blur-sm">
+                <TooltipLabel label="Additional Information" tooltipKey="additionalInfo" />
+                <Textarea 
+                  placeholder="Any other context, constraints, or creative ideas..." 
+                  value={brief.additionalInfo} 
+                  onChange={(e) => handleBriefChange("additionalInfo", e.target.value)} 
+                  rows={3} 
+                  className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 mt-2" 
+                />
+              </div>
 
               {/* Brand Focus */}
-              <Collapsible open={brandFocusOpen} onOpenChange={setBrandFocusOpen}><CollapsibleTrigger asChild><button className="w-full flex items-center justify-between bg-slate-800/60 rounded-xl border border-cyan-500/20 p-4 text-left hover:bg-slate-800/80 transition-colors"><span className="text-sm font-semibold text-white">Adjust Brand Focus</span>{brandFocusOpen ? <ChevronUp className="w-5 h-5 text-cyan-400" /> : <ChevronDown className="w-5 h-5 text-cyan-400" />}</button></CollapsibleTrigger><CollapsibleContent className="mt-2"><div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 p-4 space-y-3">{frameworkElements.map((el) => (<div key={el.key} className="flex items-center justify-between gap-2"><div className="flex items-center gap-2"><span className="text-white/80 text-xs">{el.label}</span><Tooltip><TooltipTrigger asChild><HelpCircle className="w-3 h-3 text-cyan-400/50 hover:text-cyan-300 cursor-help" /></TooltipTrigger><TooltipContent className="max-w-xs bg-slate-800 border-cyan-500/30 text-white text-xs">{el.tooltip}</TooltipContent></Tooltip></div><Select value={frameworkSelection[el.key]} onValueChange={(v) => handleFrameworkChange(el.key, v as FrameworkOption)}><SelectTrigger className="w-28 h-7 bg-slate-700/50 border-cyan-500/30 text-white text-xs"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-800 border-cyan-500/30"><SelectItem value="use" className="text-white text-xs hover:bg-cyan-500/20">Use</SelectItem><SelectItem value="emphasise" className="text-white text-xs hover:bg-cyan-500/20">Emphasise</SelectItem><SelectItem value="ignore" className="text-white text-xs hover:bg-cyan-500/20">Ignore</SelectItem></SelectContent></Select></div>))}</div></CollapsibleContent></Collapsible>
+              <Collapsible open={brandFocusOpen} onOpenChange={setBrandFocusOpen}>
+                <CollapsibleTrigger asChild>
+                  <button className="w-full flex items-center justify-between bg-slate-800/60 rounded-xl border border-cyan-500/20 p-4 text-left hover:bg-slate-800/80 transition-colors">
+                    <span className="text-sm font-semibold text-white">Adjust Brand Focus</span>
+                    {brandFocusOpen ? <ChevronUp className="w-5 h-5 text-cyan-400" /> : <ChevronDown className="w-5 h-5 text-cyan-400" />}
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-2">
+                  <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 p-4 space-y-3">
+                    {frameworkElements.map((el) => (
+                      <div key={el.key} className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-white/80 text-xs">{el.label}</span>
+                          <Tooltip>
+                            <TooltipTrigger asChild><HelpCircle className="w-3 h-3 text-cyan-400/50 hover:text-cyan-300 cursor-help" /></TooltipTrigger>
+                            <TooltipContent className="max-w-xs bg-slate-800 border-cyan-500/30 text-white text-xs">{el.tooltip}</TooltipContent>
+                          </Tooltip>
+                        </div>
+                        <Select value={frameworkSelection[el.key]} onValueChange={(v) => handleFrameworkChange(el.key, v as FrameworkOption)}>
+                          <SelectTrigger className="w-28 h-7 bg-slate-700/50 border-cyan-500/30 text-white text-xs"><SelectValue /></SelectTrigger>
+                          <SelectContent className="bg-slate-800 border-cyan-500/30">
+                            <SelectItem value="use" className="text-white text-xs hover:bg-cyan-500/20">Use</SelectItem>
+                            <SelectItem value="emphasise" className="text-white text-xs hover:bg-cyan-500/20">Emphasise</SelectItem>
+                            <SelectItem value="ignore" className="text-white text-xs hover:bg-cyan-500/20">Ignore</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
             </div>
           </div>
 
-          <div className="flex justify-center mt-8"><Button onClick={validateAndContinue} size="lg" className="px-10 py-4 text-base font-semibold bg-gradient-to-r from-cyan-500 to-cyan-400 text-slate-900 hover:from-cyan-400 hover:to-cyan-300 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-400/40 hover:scale-105 transition-all duration-300">Continue to idea generation</Button></div>
+          <div className="flex justify-center mt-8">
+            <Button onClick={validateAndContinue} size="lg" className="px-10 py-4 text-base font-semibold bg-gradient-to-r from-cyan-500 to-cyan-400 text-slate-900 hover:from-cyan-400 hover:to-cyan-300 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-400/40 hover:scale-105 transition-all duration-300">
+              Continue to idea generation
+            </Button>
+          </div>
         </main>
       </div>
     </TooltipProvider>
