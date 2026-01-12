@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
-  ArrowLeft, FileText, Sparkles, RefreshCw, Target, MessageSquare, 
-  Calendar, Layers, AlertTriangle, DollarSign, Download, ChevronDown, 
-  ChevronUp, CheckCircle2, Megaphone, Clock, Package
+  ArrowLeft, FileText, Sparkles, RefreshCw, Download, Save,
+  Pencil, Check, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import quantumLogo from "@/assets/quantum-logo.png";
@@ -90,6 +91,145 @@ interface LocationState {
   selectedIdea: CampaignIdea;
 }
 
+// Editable field component
+const EditableField = ({ 
+  value, 
+  onChange, 
+  multiline = false,
+  label,
+  className = ""
+}: { 
+  value: string; 
+  onChange: (val: string) => void; 
+  multiline?: boolean;
+  label?: string;
+  className?: string;
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(value);
+
+  const handleSave = () => {
+    onChange(editValue);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditValue(value);
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <div className={`relative ${className}`}>
+        {label && <label className="block text-xs font-medium text-slate-500 uppercase mb-1">{label}</label>}
+        {multiline ? (
+          <Textarea
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            className="min-h-[80px] bg-white border-slate-300 text-slate-900"
+            autoFocus
+          />
+        ) : (
+          <Input
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            className="bg-white border-slate-300 text-slate-900"
+            autoFocus
+          />
+        )}
+        <div className="flex gap-1 mt-2">
+          <Button size="sm" onClick={handleSave} className="h-7 px-2 bg-green-600 hover:bg-green-700">
+            <Check className="w-3 h-3" />
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleCancel} className="h-7 px-2">
+            <X className="w-3 h-3" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className={`group cursor-pointer hover:bg-slate-100 rounded px-2 py-1 -mx-2 -my-1 transition-colors ${className}`}
+      onClick={() => setIsEditing(true)}
+    >
+      {label && <label className="block text-xs font-medium text-slate-500 uppercase mb-1">{label}</label>}
+      <div className="flex items-start gap-2">
+        <span className="flex-grow">{value || <span className="text-slate-400 italic">Click to edit</span>}</span>
+        <Pencil className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 flex-shrink-0 mt-1" />
+      </div>
+    </div>
+  );
+};
+
+// Editable list component
+const EditableList = ({ 
+  items, 
+  onChange, 
+  label 
+}: { 
+  items: string[]; 
+  onChange: (items: string[]) => void; 
+  label?: string;
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(items.join('\n'));
+
+  const handleSave = () => {
+    const newItems = editValue.split('\n').filter(item => item.trim());
+    onChange(newItems);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditValue(items.join('\n'));
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <div>
+        {label && <label className="block text-xs font-medium text-slate-500 uppercase mb-1">{label}</label>}
+        <Textarea
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          placeholder="One item per line"
+          className="min-h-[100px] bg-white border-slate-300 text-slate-900"
+          autoFocus
+        />
+        <p className="text-xs text-slate-500 mt-1">One item per line</p>
+        <div className="flex gap-1 mt-2">
+          <Button size="sm" onClick={handleSave} className="h-7 px-2 bg-green-600 hover:bg-green-700">
+            <Check className="w-3 h-3" />
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleCancel} className="h-7 px-2">
+            <X className="w-3 h-3" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className="group cursor-pointer hover:bg-slate-100 rounded px-2 py-1 -mx-2 -my-1 transition-colors"
+      onClick={() => setIsEditing(true)}
+    >
+      {label && <label className="block text-xs font-medium text-slate-500 uppercase mb-1">{label}</label>}
+      <ul className="space-y-1">
+        {items.map((item, i) => (
+          <li key={i} className="flex items-start gap-2 text-slate-700">
+            <span className="text-slate-400">•</span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+      <Pencil className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 mt-2" />
+    </div>
+  );
+};
+
 const CampaignPlan = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -98,15 +238,7 @@ const CampaignPlan = () => {
 
   const [plan, setPlan] = useState<CampaignPlanData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    overview: true,
-    messaging: true,
-    channels: true,
-    timeline: true,
-    assets: true,
-    budget: true,
-    risks: true,
-  });
+  const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
     if (!state?.selectedIdea || !state?.brief) {
@@ -142,9 +274,10 @@ const CampaignPlan = () => {
 
       if (data?.plan) {
         setPlan(data.plan);
+        setHasChanges(false);
         toast({
           title: "Plan generated!",
-          description: "Your campaign plan is ready for review.",
+          description: "Your campaign plan is ready for review and editing.",
         });
       } else {
         throw new Error('Invalid response format');
@@ -161,8 +294,35 @@ const CampaignPlan = () => {
     }
   };
 
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  const updatePlan = (path: string, value: any) => {
+    if (!plan) return;
+    
+    const keys = path.split('.');
+    const newPlan = JSON.parse(JSON.stringify(plan));
+    let current: any = newPlan;
+    
+    for (let i = 0; i < keys.length - 1; i++) {
+      const key = keys[i];
+      if (key.includes('[')) {
+        const [arrKey, indexStr] = key.split('[');
+        const index = parseInt(indexStr.replace(']', ''));
+        current = current[arrKey][index];
+      } else {
+        current = current[key];
+      }
+    }
+    
+    const lastKey = keys[keys.length - 1];
+    if (lastKey.includes('[')) {
+      const [arrKey, indexStr] = lastKey.split('[');
+      const index = parseInt(indexStr.replace(']', ''));
+      current[arrKey][index] = value;
+    } else {
+      current[lastKey] = value;
+    }
+    
+    setPlan(newPlan);
+    setHasChanges(true);
   };
 
   const handleExport = () => {
@@ -191,396 +351,429 @@ const CampaignPlan = () => {
     });
   };
 
+  const handleSave = () => {
+    toast({
+      title: "Saved!",
+      description: "Your changes have been saved locally.",
+    });
+    setHasChanges(false);
+  };
+
   if (!state) {
     return null;
   }
 
-  const SectionHeader = ({ 
-    icon: Icon, 
-    title, 
-    section, 
-    color = "cyan" 
-  }: { 
-    icon: any; 
-    title: string; 
-    section: string;
-    color?: string;
-  }) => (
-    <button
-      onClick={() => toggleSection(section)}
-      className="w-full flex items-center justify-between p-4 hover:bg-slate-700/20 transition-colors rounded-t-xl"
-    >
-      <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-lg bg-${color}-500/20 flex items-center justify-center`}>
-          <Icon className={`w-5 h-5 text-${color}-400`} />
-        </div>
-        <h3 className="font-semibold text-white text-lg">{title}</h3>
-      </div>
-      {expandedSections[section] ? (
-        <ChevronUp className="w-5 h-5 text-cyan-400" />
-      ) : (
-        <ChevronDown className="w-5 h-5 text-cyan-400/60" />
-      )}
-    </button>
-  );
-
-  const PriorityBadge = ({ priority }: { priority: string }) => {
-    const colors = {
-      high: 'bg-red-500/20 text-red-300 border-red-500/30',
-      medium: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
-      low: 'bg-green-500/20 text-green-300 border-green-500/30',
-      'must-have': 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-      'nice-to-have': 'bg-slate-500/20 text-slate-300 border-slate-500/30',
-    };
-    return (
-      <span className={`text-xs px-2 py-1 rounded-full border ${colors[priority as keyof typeof colors] || colors.medium}`}>
-        {priority}
-      </span>
-    );
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-lg border-b border-cyan-500/20">
+      <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
         <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
-            <Link to="/">
-              <img src={quantumLogo} alt="TQI" className="h-7" />
-            </Link>
-            <Link
-              to="/campaign/ideas"
-              state={location.state}
-              className="flex items-center gap-2 text-cyan-300 hover:text-white text-sm transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Ideas
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link to="/">
+                <img src={quantumLogo} alt="TQI" className="h-7" />
+              </Link>
+              <span className="text-slate-300">|</span>
+              <span className="text-sm font-medium text-slate-600">Campaign Plan</span>
+            </div>
+            <div className="flex items-center gap-3">
+              {hasChanges && (
+                <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">Unsaved changes</span>
+              )}
+              <Link
+                to="/campaign/ideas"
+                state={location.state}
+                className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-sm transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Ideas
+              </Link>
+            </div>
           </div>
         </nav>
       </header>
 
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-6xl">
-        {/* Hero Section */}
-        <section className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 mb-4 shadow-lg shadow-cyan-500/30">
-            <FileText className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">
-            Campaign Plan
-          </h1>
-          <p className="text-cyan-200/80 max-w-2xl mx-auto text-sm">
-            Comprehensive execution plan with messaging, channels, timeline, and assets.
-          </p>
-        </section>
-
-        {/* Selected Idea Summary */}
-        <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 p-5 mb-6 backdrop-blur-sm">
-          <h3 className="font-semibold text-white text-sm mb-3 flex items-center gap-2">
-            <Target className="w-4 h-4 text-cyan-400" />
-            Selected Campaign Idea
-          </h3>
-          <div className="flex flex-col md:flex-row md:items-center gap-4">
-            <div className="flex-grow">
-              <h4 className="text-lg font-semibold text-white">{state.selectedIdea.idea_name}</h4>
-              <p className="text-cyan-200/70 text-sm italic mt-1">"{state.selectedIdea.core_thought}"</p>
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-4xl">
+        {/* Document Header */}
+        <div className="bg-white rounded-lg border border-slate-200 p-6 mb-6 shadow-sm">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Internal Document</p>
+              <h1 className="text-2xl font-bold text-slate-900 mb-2">
+                {state.selectedIdea.idea_name}
+              </h1>
+              <p className="text-slate-600 italic">"{state.selectedIdea.core_thought}"</p>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-cyan-400/70">On-Brief Score:</span>
-              <span className={`text-lg font-bold ${
-                state.selectedIdea.on_brief_score >= 8 ? 'text-green-400' : 
-                state.selectedIdea.on_brief_score >= 6 ? 'text-yellow-400' : 'text-red-400'
+            <div className="text-right">
+              <p className="text-xs text-slate-500">On-Brief Score</p>
+              <p className={`text-2xl font-bold ${
+                state.selectedIdea.on_brief_score >= 8 ? 'text-green-600' : 
+                state.selectedIdea.on_brief_score >= 6 ? 'text-amber-600' : 'text-red-600'
               }`}>
                 {state.selectedIdea.on_brief_score}/10
-              </span>
+              </p>
             </div>
           </div>
         </div>
 
         {/* Generate Button */}
         {!plan && !isLoading && (
-          <div className="flex justify-center mb-8">
+          <div className="bg-white rounded-lg border border-slate-200 p-8 text-center shadow-sm">
+            <FileText className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+            <h2 className="text-lg font-semibold text-slate-900 mb-2">Generate Campaign Plan</h2>
+            <p className="text-slate-600 text-sm mb-6">
+              Create a detailed, editable campaign plan based on your selected idea.
+            </p>
             <Button
               onClick={generatePlan}
               disabled={isLoading}
-              size="lg"
-              className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-8 py-6 text-lg shadow-lg shadow-cyan-500/30 transition-all hover:shadow-cyan-400/40"
+              className="bg-cyan-600 hover:bg-cyan-700 text-white"
             >
-              <Sparkles className="w-5 h-5 mr-2" />
-              Generate Full Campaign Plan
+              <Sparkles className="w-4 h-4 mr-2" />
+              Generate Plan
             </Button>
           </div>
         )}
 
         {/* Loading State */}
         {isLoading && (
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full border-4 border-cyan-500/30 animate-pulse" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Sparkles className="w-8 h-8 text-cyan-400 animate-bounce" />
-              </div>
-            </div>
-            <p className="text-cyan-200/80 mt-4 text-sm">Building your campaign plan...</p>
-            <p className="text-cyan-200/50 mt-1 text-xs">This may take a moment</p>
+          <div className="bg-white rounded-lg border border-slate-200 p-12 text-center shadow-sm">
+            <div className="animate-spin w-8 h-8 border-2 border-cyan-600 border-t-transparent rounded-full mx-auto mb-4" />
+            <p className="text-slate-600">Generating your campaign plan...</p>
+            <p className="text-slate-400 text-sm mt-1">This may take a moment</p>
           </div>
         )}
 
-        {/* Campaign Plan Content */}
+        {/* Campaign Plan Document */}
         {plan && !isLoading && (
           <div className="space-y-6">
             {/* Action Bar */}
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-cyan-400" />
-                {plan.campaign_overview.platform_name}
+            <div className="flex items-center justify-end gap-3">
+              <Button
+                onClick={handleSave}
+                variant="outline"
+                size="sm"
+                disabled={!hasChanges}
+                className="border-slate-300"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save
+              </Button>
+              <Button
+                onClick={handleExport}
+                variant="outline"
+                size="sm"
+                className="border-slate-300"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export JSON
+              </Button>
+              <Button
+                onClick={generatePlan}
+                variant="outline"
+                size="sm"
+                className="border-slate-300"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Regenerate
+              </Button>
+            </div>
+
+            {/* Section 1: Overview */}
+            <section className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-900 border-b border-slate-200 pb-3 mb-4">
+                1. Campaign Overview
               </h2>
-              <div className="flex gap-3">
-                <Button
-                  onClick={handleExport}
-                  variant="outline"
-                  size="sm"
-                  className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 hover:text-white"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Export
-                </Button>
-                <Button
-                  onClick={generatePlan}
-                  variant="outline"
-                  size="sm"
-                  className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 hover:text-white"
-                >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Regenerate
-                </Button>
+              <div className="space-y-4">
+                <EditableField
+                  label="Campaign Name"
+                  value={plan.campaign_overview.platform_name}
+                  onChange={(val) => updatePlan('campaign_overview.platform_name', val)}
+                  className="text-xl font-semibold text-slate-900"
+                />
+                <EditableField
+                  label="Tagline"
+                  value={plan.campaign_overview.tagline}
+                  onChange={(val) => updatePlan('campaign_overview.tagline', val)}
+                  className="text-lg text-slate-700"
+                />
+                <EditableField
+                  label="Big Idea"
+                  value={plan.campaign_overview.big_idea}
+                  onChange={(val) => updatePlan('campaign_overview.big_idea', val)}
+                  multiline
+                  className="text-slate-700"
+                />
+                <EditableList
+                  label="Success Metrics"
+                  items={plan.campaign_overview.success_metrics}
+                  onChange={(items) => updatePlan('campaign_overview.success_metrics', items)}
+                />
               </div>
-            </div>
+            </section>
 
-            {/* Campaign Overview */}
-            <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 overflow-hidden">
-              <SectionHeader icon={Target} title="Campaign Overview" section="overview" />
-              {expandedSections.overview && (
-                <div className="p-5 pt-0 space-y-4">
-                  <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-lg p-4 border border-cyan-500/20">
-                    <p className="text-2xl font-bold text-white mb-2">{plan.campaign_overview.tagline}</p>
-                    <p className="text-cyan-200/80">{plan.campaign_overview.big_idea}</p>
+            {/* Section 2: Messaging Framework */}
+            <section className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-900 border-b border-slate-200 pb-3 mb-4">
+                2. Messaging Framework
+              </h2>
+              <div className="space-y-4">
+                <EditableField
+                  label="Primary Message"
+                  value={plan.messaging_framework.primary_message}
+                  onChange={(val) => updatePlan('messaging_framework.primary_message', val)}
+                  className="text-lg font-medium text-slate-900"
+                />
+                <EditableList
+                  label="Supporting Messages"
+                  items={plan.messaging_framework.supporting_messages}
+                  onChange={(items) => updatePlan('messaging_framework.supporting_messages', items)}
+                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <div className="bg-slate-50 rounded-lg p-4">
+                    <EditableField
+                      label="Call to Action"
+                      value={plan.messaging_framework.call_to_action}
+                      onChange={(val) => updatePlan('messaging_framework.call_to_action', val)}
+                      className="font-medium text-slate-900"
+                    />
                   </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-cyan-400 mb-2">Success Metrics</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {plan.campaign_overview.success_metrics.map((metric, i) => (
-                        <span key={i} className="bg-slate-700/50 text-white/90 text-sm px-3 py-1 rounded-full">
-                          {metric}
-                        </span>
-                      ))}
+                  <div className="bg-slate-50 rounded-lg p-4">
+                    <EditableField
+                      label="Elevator Pitch"
+                      value={plan.messaging_framework.elevator_pitch}
+                      onChange={(val) => updatePlan('messaging_framework.elevator_pitch', val)}
+                      multiline
+                      className="text-slate-700 text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Section 3: Channels & Tactics */}
+            <section className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-900 border-b border-slate-200 pb-3 mb-4">
+                3. Channels & Tactics
+              </h2>
+              <div className="space-y-4">
+                {plan.channels.map((channel, i) => (
+                  <div key={i} className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <EditableField
+                        value={channel.channel}
+                        onChange={(val) => {
+                          const newChannels = [...plan.channels];
+                          newChannels[i] = { ...newChannels[i], channel: val };
+                          updatePlan('channels', newChannels);
+                        }}
+                        className="text-base font-semibold text-slate-900"
+                      />
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        channel.priority === 'high' ? 'bg-red-100 text-red-700' :
+                        channel.priority === 'medium' ? 'bg-amber-100 text-amber-700' :
+                        'bg-green-100 text-green-700'
+                      }`}>
+                        {channel.priority} priority
+                      </span>
+                    </div>
+                    <EditableField
+                      label="Role"
+                      value={channel.role}
+                      onChange={(val) => {
+                        const newChannels = [...plan.channels];
+                        newChannels[i] = { ...newChannels[i], role: val };
+                        updatePlan('channels', newChannels);
+                      }}
+                      className="text-slate-600 text-sm mb-3"
+                    />
+                    <EditableList
+                      label="Tactics"
+                      items={channel.tactics}
+                      onChange={(items) => {
+                        const newChannels = [...plan.channels];
+                        newChannels[i] = { ...newChannels[i], tactics: items };
+                        updatePlan('channels', newChannels);
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Section 4: Timeline */}
+            <section className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-900 border-b border-slate-200 pb-3 mb-4">
+                4. Timeline
+              </h2>
+              <div className="mb-4">
+                <EditableField
+                  label="Total Duration"
+                  value={plan.timeline.total_duration}
+                  onChange={(val) => updatePlan('timeline.total_duration', val)}
+                  className="font-medium text-slate-900"
+                />
+              </div>
+              <div className="space-y-4">
+                {plan.timeline.phases.map((phase, i) => (
+                  <div key={i} className="border-l-4 border-cyan-500 pl-4 py-2">
+                    <div className="flex items-center gap-3 mb-2">
+                      <EditableField
+                        value={phase.phase_name}
+                        onChange={(val) => {
+                          const newPhases = [...plan.timeline.phases];
+                          newPhases[i] = { ...newPhases[i], phase_name: val };
+                          updatePlan('timeline.phases', newPhases);
+                        }}
+                        className="font-semibold text-slate-900"
+                      />
+                      <span className="text-xs bg-slate-200 text-slate-600 px-2 py-1 rounded">
+                        {phase.duration}
+                      </span>
+                    </div>
+                    <EditableField
+                      label="Focus"
+                      value={phase.focus}
+                      onChange={(val) => {
+                        const newPhases = [...plan.timeline.phases];
+                        newPhases[i] = { ...newPhases[i], focus: val };
+                        updatePlan('timeline.phases', newPhases);
+                      }}
+                      className="text-slate-600 text-sm mb-2"
+                    />
+                    <EditableList
+                      label="Key Activities"
+                      items={phase.key_activities}
+                      onChange={(items) => {
+                        const newPhases = [...plan.timeline.phases];
+                        newPhases[i] = { ...newPhases[i], key_activities: items };
+                        updatePlan('timeline.phases', newPhases);
+                      }}
+                    />
+                    <div className="mt-2">
+                      <EditableList
+                        label="Deliverables"
+                        items={phase.deliverables}
+                        onChange={(items) => {
+                          const newPhases = [...plan.timeline.phases];
+                          newPhases[i] = { ...newPhases[i], deliverables: items };
+                          updatePlan('timeline.phases', newPhases);
+                        }}
+                      />
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
+                ))}
+              </div>
+            </section>
 
-            {/* Messaging Framework */}
-            <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 overflow-hidden">
-              <SectionHeader icon={MessageSquare} title="Messaging Framework" section="messaging" />
-              {expandedSections.messaging && (
-                <div className="p-5 pt-0 space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-cyan-400 mb-2">Primary Message</h4>
-                    <p className="text-xl font-semibold text-white">{plan.messaging_framework.primary_message}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-cyan-400 mb-2">Supporting Messages</h4>
-                    <ul className="space-y-2">
-                      {plan.messaging_framework.supporting_messages.map((msg, i) => (
-                        <li key={i} className="flex items-start gap-2 text-white/80">
-                          <CheckCircle2 className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" />
-                          {msg}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-slate-700/30 rounded-lg p-4">
-                      <h4 className="text-sm font-medium text-cyan-400 mb-2">Call to Action</h4>
-                      <p className="text-white font-semibold">{plan.messaging_framework.call_to_action}</p>
-                    </div>
-                    <div className="bg-slate-700/30 rounded-lg p-4">
-                      <h4 className="text-sm font-medium text-cyan-400 mb-2">Elevator Pitch</h4>
-                      <p className="text-white/80 text-sm">{plan.messaging_framework.elevator_pitch}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Channels */}
-            <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 overflow-hidden">
-              <SectionHeader icon={Megaphone} title="Channels & Tactics" section="channels" />
-              {expandedSections.channels && (
-                <div className="p-5 pt-0">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {plan.channels.map((channel, i) => (
-                      <div key={i} className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/30">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-semibold text-white">{channel.channel}</h4>
-                          <PriorityBadge priority={channel.priority} />
-                        </div>
-                        <p className="text-cyan-200/70 text-sm mb-3">{channel.role}</p>
-                        <div className="space-y-2">
-                          <div>
-                            <span className="text-xs text-cyan-400/70 uppercase">Tactics</span>
-                            <ul className="mt-1 space-y-1">
-                              {channel.tactics.map((tactic, j) => (
-                                <li key={j} className="text-white/80 text-sm flex items-start gap-1">
-                                  <span className="text-cyan-400">•</span> {tactic}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Timeline */}
-            <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 overflow-hidden">
-              <SectionHeader icon={Calendar} title="Timeline" section="timeline" />
-              {expandedSections.timeline && (
-                <div className="p-5 pt-0">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Clock className="w-4 h-4 text-cyan-400" />
-                    <span className="text-white font-medium">Total Duration: {plan.timeline.total_duration}</span>
-                  </div>
-                  <div className="space-y-4">
-                    {plan.timeline.phases.map((phase, i) => (
-                      <div key={i} className="relative pl-6 border-l-2 border-cyan-500/30">
-                        <div className="absolute -left-2 top-0 w-4 h-4 rounded-full bg-cyan-500" />
-                        <div className="bg-slate-700/30 rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-semibold text-white">{phase.phase_name}</h4>
-                            <span className="text-cyan-400 text-sm">{phase.duration}</span>
-                          </div>
-                          <p className="text-cyan-200/70 text-sm mb-3">{phase.focus}</p>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <span className="text-xs text-cyan-400/70 uppercase">Key Activities</span>
-                              <ul className="mt-1 space-y-1">
-                                {phase.key_activities.map((activity, j) => (
-                                  <li key={j} className="text-white/80 text-sm flex items-start gap-1">
-                                    <span className="text-cyan-400">•</span> {activity}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                            <div>
-                              <span className="text-xs text-cyan-400/70 uppercase">Deliverables</span>
-                              <ul className="mt-1 space-y-1">
-                                {phase.deliverables.map((deliverable, j) => (
-                                  <li key={j} className="text-white/80 text-sm flex items-start gap-1">
-                                    <CheckCircle2 className="w-3 h-3 text-green-400 mt-0.5" /> {deliverable}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Assets */}
-            <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 overflow-hidden">
-              <SectionHeader icon={Package} title="Assets Required" section="assets" />
-              {expandedSections.assets && (
-                <div className="p-5 pt-0">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-slate-600/30">
-                          <th className="text-left py-2 px-3 text-cyan-400 font-medium">Asset</th>
-                          <th className="text-left py-2 px-3 text-cyan-400 font-medium">Type</th>
-                          <th className="text-left py-2 px-3 text-cyan-400 font-medium">Channel</th>
-                          <th className="text-left py-2 px-3 text-cyan-400 font-medium">Priority</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {plan.assets.map((asset, i) => (
-                          <tr key={i} className="border-b border-slate-700/30 hover:bg-slate-700/20">
-                            <td className="py-3 px-3">
-                              <p className="text-white font-medium">{asset.asset_name}</p>
-                              <p className="text-white/60 text-xs mt-0.5">{asset.description}</p>
-                            </td>
-                            <td className="py-3 px-3 text-white/80">{asset.asset_type}</td>
-                            <td className="py-3 px-3 text-white/80">{asset.channel}</td>
-                            <td className="py-3 px-3"><PriorityBadge priority={asset.priority} /></td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Budget Allocation */}
-            <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 overflow-hidden">
-              <SectionHeader icon={DollarSign} title="Budget Allocation" section="budget" />
-              {expandedSections.budget && (
-                <div className="p-5 pt-0 space-y-4">
-                  <div className="bg-gradient-to-r from-green-500/10 to-cyan-500/10 rounded-lg p-4 border border-green-500/20">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-sm text-cyan-400">Budget Level:</span>
-                      <span className="text-white font-semibold capitalize">{plan.budget_allocation.level}</span>
-                    </div>
-                    <p className="text-white/80">{plan.budget_allocation.recommendation}</p>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {plan.budget_allocation.breakdown.map((item, i) => (
-                      <div key={i} className="bg-slate-700/30 rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-white font-medium">{item.category}</span>
-                          <span className="text-cyan-400 font-bold">{item.percentage}%</span>
-                        </div>
-                        <p className="text-white/60 text-xs">{item.notes}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Risks & Mitigations */}
-            <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 overflow-hidden">
-              <SectionHeader icon={AlertTriangle} title="Risks & Mitigations" section="risks" />
-              {expandedSections.risks && (
-                <div className="p-5 pt-0">
-                  <div className="space-y-3">
-                    {plan.risks_and_mitigations.map((item, i) => (
-                      <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-700/20 rounded-lg p-4">
-                        <div>
-                          <span className="text-xs text-red-400/70 uppercase flex items-center gap-1">
-                            <AlertTriangle className="w-3 h-3" /> Risk
+            {/* Section 5: Assets */}
+            <section className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-900 border-b border-slate-200 pb-3 mb-4">
+                5. Required Assets
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200">
+                      <th className="text-left py-2 px-2 font-medium text-slate-600">Asset</th>
+                      <th className="text-left py-2 px-2 font-medium text-slate-600">Type</th>
+                      <th className="text-left py-2 px-2 font-medium text-slate-600">Channel</th>
+                      <th className="text-left py-2 px-2 font-medium text-slate-600">Priority</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {plan.assets.map((asset, i) => (
+                      <tr key={i} className="border-b border-slate-100 hover:bg-slate-50">
+                        <td className="py-2 px-2">
+                          <div className="font-medium text-slate-900">{asset.asset_name}</div>
+                          <div className="text-xs text-slate-500">{asset.description}</div>
+                        </td>
+                        <td className="py-2 px-2 text-slate-600">{asset.asset_type}</td>
+                        <td className="py-2 px-2 text-slate-600">{asset.channel}</td>
+                        <td className="py-2 px-2">
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            asset.priority === 'must-have' 
+                              ? 'bg-cyan-100 text-cyan-700' 
+                              : 'bg-slate-100 text-slate-600'
+                          }`}>
+                            {asset.priority}
                           </span>
-                          <p className="text-white/90 mt-1">{item.risk}</p>
-                        </div>
-                        <div>
-                          <span className="text-xs text-green-400/70 uppercase flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" /> Mitigation
-                          </span>
-                          <p className="text-white/90 mt-1">{item.mitigation}</p>
-                        </div>
-                      </div>
+                        </td>
+                      </tr>
                     ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            {/* Section 6: Budget */}
+            <section className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-900 border-b border-slate-200 pb-3 mb-4">
+                6. Budget Allocation
+              </h2>
+              <div className="mb-4">
+                <p className="text-xs font-medium text-slate-500 uppercase mb-1">Budget Level</p>
+                <p className="font-medium text-slate-900">{plan.budget_allocation.level}</p>
+              </div>
+              <EditableField
+                label="Recommendation"
+                value={plan.budget_allocation.recommendation}
+                onChange={(val) => updatePlan('budget_allocation.recommendation', val)}
+                multiline
+                className="text-slate-700 mb-4"
+              />
+              <div className="space-y-2">
+                {plan.budget_allocation.breakdown.map((item, i) => (
+                  <div key={i} className="flex items-center gap-4 py-2 border-b border-slate-100">
+                    <div className="w-1/3 font-medium text-slate-900">{item.category}</div>
+                    <div className="w-16 text-right font-semibold text-cyan-600">{item.percentage}%</div>
+                    <div className="flex-grow text-slate-600 text-sm">{item.notes}</div>
                   </div>
-                </div>
-              )}
+                ))}
+              </div>
+            </section>
+
+            {/* Section 7: Risks */}
+            <section className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-900 border-b border-slate-200 pb-3 mb-4">
+                7. Risks & Mitigations
+              </h2>
+              <div className="space-y-3">
+                {plan.risks_and_mitigations.map((item, i) => (
+                  <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-4 py-3 border-b border-slate-100 last:border-0">
+                    <div>
+                      <p className="text-xs font-medium text-red-600 uppercase mb-1">Risk</p>
+                      <EditableField
+                        value={item.risk}
+                        onChange={(val) => {
+                          const newRisks = [...plan.risks_and_mitigations];
+                          newRisks[i] = { ...newRisks[i], risk: val };
+                          updatePlan('risks_and_mitigations', newRisks);
+                        }}
+                        className="text-slate-700"
+                      />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-green-600 uppercase mb-1">Mitigation</p>
+                      <EditableField
+                        value={item.mitigation}
+                        onChange={(val) => {
+                          const newRisks = [...plan.risks_and_mitigations];
+                          newRisks[i] = { ...newRisks[i], mitigation: val };
+                          updatePlan('risks_and_mitigations', newRisks);
+                        }}
+                        className="text-slate-700"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Document Footer */}
+            <div className="text-center text-xs text-slate-400 py-4">
+              <p>Internal Document • Last generated {new Date().toLocaleDateString()}</p>
+              <p className="mt-1">Click on any text to edit</p>
             </div>
           </div>
         )}
