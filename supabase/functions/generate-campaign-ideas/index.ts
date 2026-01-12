@@ -135,12 +135,20 @@ Generate 3 distinct campaign platform ideas as a JSON object with an "ideas" arr
       jsonContent = jsonMatch[1].trim();
     }
 
-    let ideas;
+    let parsedResponse;
     try {
-      ideas = JSON.parse(jsonContent);
+      parsedResponse = JSON.parse(jsonContent);
     } catch (parseError) {
       console.error('JSON parse error:', parseError, 'Content:', jsonContent);
       throw new Error('Failed to parse campaign ideas from AI response');
+    }
+
+    // Handle both {ideas: [...]} and direct [...] formats
+    const ideas = Array.isArray(parsedResponse) ? parsedResponse : parsedResponse.ideas;
+    
+    if (!ideas || !Array.isArray(ideas)) {
+      console.error('Invalid ideas format:', parsedResponse);
+      throw new Error('Invalid campaign ideas format in AI response');
     }
 
     console.log('Successfully generated', ideas.length, 'campaign ideas');
