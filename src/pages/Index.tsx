@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import SolutionsExplorer from "@/components/SolutionsExplorer";
 import BrandCampaign from "@/components/BrandCampaign";
 import CollectiveImpact from "@/components/CollectiveImpact";
 import { EmailPopup } from "@/components/EmailPopup";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Sparkles } from "lucide-react";
+import { Copy, Sparkles, Megaphone } from "lucide-react";
 import quantumLogo from "@/assets/quantum-logo.png";
 import iconMarketIntelligence from "@/assets/icon-market-intelligence.png";
 import iconEcosystem from "@/assets/icon-ecosystem.png";
@@ -35,6 +36,7 @@ interface StructureData {
 }
 
 const Index = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [activeSection, setActiveSection] = useState("identity");
   const [activeArchetype, setActiveArchetype] = useState<'sage' | 'explorer'>('sage');
@@ -233,16 +235,25 @@ These archetypes inform tone and approach but are not requirements to explicitly
             className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8"
             dangerouslySetInnerHTML={{ __html: appData.definitions.intro }}
           />
-          <button
-            onClick={generateLovablePrompt}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
-          >
-            <Sparkles className="w-5 h-5" />
-            Generate Lovable Prompt
-            <Copy className="w-4 h-4 ml-1" />
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={() => navigate("/campaign/input")}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+            >
+              <Megaphone className="w-5 h-5" />
+              Generate campaign
+            </button>
+            <button
+              onClick={generateLovablePrompt}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+            >
+              <Sparkles className="w-5 h-5" />
+              Generate Lovable Prompt
+              <Copy className="w-4 h-4 ml-1" />
+            </button>
+          </div>
           <p className="text-sm text-muted-foreground mt-3">
-            Copy brand guidelines to paste into Lovable for consistent product design
+            Create a campaign or copy brand guidelines to paste into Lovable
           </p>
         </section>
 
