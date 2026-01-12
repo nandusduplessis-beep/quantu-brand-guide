@@ -98,10 +98,25 @@ const CampaignInput = () => {
   });
 
   const [brief, setBrief] = useState<CampaignBrief>({
-    campaignName: "", objective: "", selectedICPs: [], consumerTakeout: "", jobToBeDone: "",
-    insight: "", whyDoingCampaign: "", additionalInfo: "", campaignType: "", budgetLevel: "",
-    contentSourceType: "", contentSourceUrl: "", contentSourceFiles: [], referenceUrls: [""], referenceFiles: [],
-    campaignPeriodType: "", startDate: "", endDate: "", duration: "",
+    campaignName: "Q1 Quantum Leadership Summit",
+    objective: "Generate 100 qualified leads from enterprise CTOs and technology decision-makers interested in quantum computing adoption by end of Q1 2026",
+    selectedICPs: [],
+    consumerTakeout: "The Quantum Insider is the most trusted source for actionable quantum computing intelligence",
+    jobToBeDone: "Help enterprise leaders confidently evaluate and plan their quantum computing strategy with reliable data and expert insights",
+    insight: "Enterprise decision-makers struggle to separate quantum hype from genuine business opportunities due to lack of reliable, accessible information",
+    whyDoingCampaign: "Capitalize on growing enterprise interest in quantum computing while establishing TQI as the go-to resource for quantum business intelligence",
+    additionalInfo: "Consider aligning with upcoming Q2 quantum technology conferences and leverage recent industry reports on quantum readiness",
+    campaignType: "lead",
+    budgetLevel: "medium",
+    contentSourceType: "",
+    contentSourceUrl: "",
+    contentSourceFiles: [],
+    referenceUrls: [""],
+    referenceFiles: [],
+    campaignPeriodType: "duration",
+    startDate: "",
+    endDate: "",
+    duration: "3-months",
   });
 
   const handleFrameworkChange = (key: keyof FrameworkSelection, value: FrameworkOption) => setFrameworkSelection((prev) => ({ ...prev, [key]: value }));
