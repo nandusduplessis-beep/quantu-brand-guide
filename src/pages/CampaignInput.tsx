@@ -90,7 +90,7 @@ const CampaignInput = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [brandFocusOpen, setBrandFocusOpen] = useState(false);
-  const [allICPs, setAllICPs] = useState(true);
+  const [allICPs, setAllICPs] = useState(false);
 
   const [frameworkSelection, setFrameworkSelection] = useState<FrameworkSelection>({
     purpose: "use", brandArchetypes: "use", toneBehavior: "use", communicationPrinciples: "use",
@@ -98,16 +98,16 @@ const CampaignInput = () => {
   });
 
   const [brief, setBrief] = useState<CampaignBrief>({
-    campaignName: "Q1 Quantum Leadership Summit",
-    objective: "Generate 100 qualified leads from enterprise CTOs and technology decision-makers interested in quantum computing adoption by end of Q1 2026",
-    selectedICPs: [],
-    consumerTakeout: "The Quantum Insider is the most trusted source for actionable quantum computing intelligence",
-    jobToBeDone: "Help enterprise leaders confidently evaluate and plan their quantum computing strategy with reliable data and expert insights",
-    insight: "Enterprise decision-makers struggle to separate quantum hype from genuine business opportunities due to lack of reliable, accessible information",
-    whyDoingCampaign: "Capitalize on growing enterprise interest in quantum computing while establishing TQI as the go-to resource for quantum business intelligence",
-    additionalInfo: "Consider aligning with upcoming Q2 quantum technology conferences and leverage recent industry reports on quantum readiness",
-    campaignType: "lead",
-    budgetLevel: "medium",
+    campaignName: "TQI Brand Equity: Trusted Intelligence Partner",
+    objective: "Increase brand awareness and position TQI as the definitive source for quantum industry intelligence among investors and enterprise decision-makers, measured by 40% increase in organic traffic and 25% uplift in brand recall surveys",
+    selectedICPs: ["investors", "enterprise"],
+    consumerTakeout: "TQI delivers the most comprehensive and actionable quantum intelligence ecosystem—from Market Intelligence reports to Due Diligence services",
+    jobToBeDone: "Establish TQI as the indispensable partner for anyone navigating the quantum technology landscape, whether investing, adopting, or strategizing",
+    insight: "The quantum industry is maturing rapidly, but stakeholders lack a unified, trusted source that combines media coverage, market data, advisory expertise, and investment diligence under one roof",
+    whyDoingCampaign: "With quantum computing reaching commercial inflection points, TQI needs to cement its position as the full-service intelligence platform before competitors fragment the market",
+    additionalInfo: "Focus on TQI's unique service offerings: Market Intelligence (data & reports), Media (news & content), Campaigns (marketing services), Advisory (consulting), Due Diligence (investment analysis), and Ecosystem (events & community). Highlight how these services work together as an integrated platform.",
+    campaignType: "demand",
+    budgetLevel: "high",
     contentSourceType: "",
     contentSourceUrl: "",
     contentSourceFiles: [],
@@ -116,7 +116,7 @@ const CampaignInput = () => {
     campaignPeriodType: "duration",
     startDate: "",
     endDate: "",
-    duration: "3-months",
+    duration: "6-months",
   });
 
   const handleFrameworkChange = (key: keyof FrameworkSelection, value: FrameworkOption) => setFrameworkSelection((prev) => ({ ...prev, [key]: value }));
