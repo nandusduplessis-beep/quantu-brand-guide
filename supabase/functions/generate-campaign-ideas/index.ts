@@ -21,43 +21,68 @@ serve(async (req) => {
 
     console.log('Generating campaign ideas for:', brief.campaignName);
 
-    const systemPrompt = `You are a world-class creative strategist specializing in B2B marketing campaigns for quantum computing and deep tech industries. You generate innovative, data-driven campaign ideas that are both creative and practical.
+    const systemPrompt = `You are a senior B2B creative director in New York with deep experience in integrated campaigns across digital, social, content, and demand generation. Your job is to interpret the brief below and propose sharp, distinctive ideas that are practical to execute.
 
-Your task is to generate 3 distinct campaign ideas based on the provided brief and brand framework settings. Each idea should be unique in approach but aligned with the brand's positioning.
+TASK:
+1. Generate 3 distinct campaign platform ideas. Each idea must be on brief, but clearly different from the others in angle, tone, or execution.
 
-For each campaign idea, provide:
-1. **Title**: A catchy, memorable campaign name
-2. **Concept**: A 2-3 sentence description of the core creative concept
-3. **Key Message**: The primary message or tagline
-4. **Channels**: Recommended channels (e.g., LinkedIn, email, webinars, content marketing)
-5. **Tactics**: 3-4 specific tactical recommendations
-6. **Why It Works**: Brief explanation of why this approach fits the objective
+2. For each idea, return:
+   • idea_name: A short, memorable platform name.
+   • idea_summary: 2–3 sentences explaining the idea and how it works.
+   • core_thought: One sharp line that captures the creative springboard.
+   • key_visual_prompt: 1–2 sentence description suitable as a prompt for an AI image generator (no camera jargon, focus on concept, style, emotion, and brand cues).
+   • on_brief_score: A score from 0–10 of how well this idea fits the objective, ICP, consumer takeout, job to be done, campaign type, and budget.
+   • on_brief_justification: A detailed paragraph written in the voice of a senior B2B creative director explaining why you gave that score, including strength of the idea vs objective and ICP, how clearly the consumer takeout comes through, how realistic it is for the stated budget level, and any risks or watchouts.
 
-Format your response as a JSON array with 3 objects, each containing: title, concept, keyMessage, channels (array), tactics (array), whyItWorks.`;
+3. Tone and quality:
+   • Think like a top creative director presenting routes in a pitch.
+   • Avoid generic "AI-ish" language. Use concrete, vivid, plain language that a client could react to.
+   • Keep ideas strategically tight and executionally flexible (so they can live across LinkedIn, email, web, and potentially video).
 
-    const userPrompt = `Generate campaign ideas based on this brief:
+4. Output format:
+   • Return a valid JSON object with an array called "ideas", where each item has the fields: idea_name, idea_summary, core_thought, key_visual_prompt, on_brief_score, on_brief_justification.
 
-**Campaign Name:** ${brief.campaignName || 'Untitled Campaign'}
-**Objective:** ${brief.objective || 'Not specified'}
-**Campaign Type:** ${brief.campaignType === 'demand' ? 'Demand Generation' : brief.campaignType === 'lead' ? 'Lead Generation' : 'Not specified'}
-**Budget Level:** ${brief.budgetLevel || 'Not specified'}
-**Target Audience:** ${brief.selectedICPs?.includes('all') ? 'All ICPs' : brief.selectedICPs?.join(', ') || 'Not specified'}
-**Consumer Takeout:** ${brief.consumerTakeout || 'Not specified'}
-**Key Insight:** ${brief.insight || 'Not specified'}
-**Job to be Done:** ${brief.jobToBeDone || 'Not specified'}
-**Why This Campaign:** ${brief.whyDoingCampaign || 'Not specified'}
-**Additional Context:** ${brief.additionalInfo || 'None'}
+Before you answer, quickly re-read the brief and brand framework and silently check:
+   • Does each idea clearly solve the job to be done?
+   • Would a senior B2B marketing director plausibly buy this idea?`;
 
-**Brand Framework Settings:**
-- Purpose: ${frameworkSelection?.purpose || 'use'}
-- Brand Archetypes: ${frameworkSelection?.brandArchetypes || 'use'}
-- Tone & Behavior: ${frameworkSelection?.toneBehavior || 'use'}
-- Communication Principles: ${frameworkSelection?.communicationPrinciples || 'use'}
-- Visual Identity: ${frameworkSelection?.visualIdentity || 'use'}
-- Core Values: ${frameworkSelection?.coreValues || 'use'}
-- Solutions & Offerings: ${frameworkSelection?.solutionsOfferings || 'use'}
+    // Categorize brand elements
+    const brandElements = [
+      { name: 'Purpose', setting: frameworkSelection?.purpose },
+      { name: 'Brand Archetypes', setting: frameworkSelection?.brandArchetypes },
+      { name: 'Tone & Behavior', setting: frameworkSelection?.toneBehavior },
+      { name: 'Communication Principles', setting: frameworkSelection?.communicationPrinciples },
+      { name: 'Visual Identity', setting: frameworkSelection?.visualIdentity },
+      { name: 'Core Values', setting: frameworkSelection?.coreValues },
+      { name: 'Solutions & Offerings', setting: frameworkSelection?.solutionsOfferings },
+    ];
 
-Generate 3 creative campaign ideas as a JSON array. Only output valid JSON, no additional text.`;
+    const elementsToUse = brandElements.filter(e => e.setting === 'use').map(e => e.name).join(', ') || 'None';
+    const elementsToFocus = brandElements.filter(e => e.setting === 'focus').map(e => e.name).join(', ') || 'None';
+    const elementsToIgnore = brandElements.filter(e => e.setting === 'ignore').map(e => e.name).join(', ') || 'None';
+
+    const userPrompt = `Use this information:
+
+**Brand Framework (filtered for this campaign)**
+- Elements to use as normal: ${elementsToUse}
+- Elements to emphasise / focus: ${elementsToFocus}
+- Elements to ignore: ${elementsToIgnore}
+
+**Campaign Brief**
+- Brand: The Quantum Insider (TQI)
+- Campaign name: ${brief.campaignName || 'Untitled Campaign'}
+- Objective: ${brief.objective || 'Not specified'}
+- Audience / ICP: ${brief.selectedICPs?.includes('all') ? 'All ICPs' : brief.selectedICPs?.join(', ') || 'Not specified'}
+- Consumer takeout (single-minded message): ${brief.consumerTakeout || 'Not specified'}
+- Job to be done by this campaign: ${brief.jobToBeDone || 'Not specified'}
+- Campaign type: ${brief.campaignType === 'demand' ? 'Demand generation' : brief.campaignType === 'lead' ? 'Lead generation' : 'Not specified'}
+- Budget level: ${brief.budgetLevel || 'Not specified'}
+- Solutions to highlight: ${brief.selectedSolutions?.includes('all') ? 'All solutions' : brief.selectedSolutions?.join(', ') || 'Not specified'}
+- Key insight: ${brief.insight || 'Not specified'}
+- Why this campaign: ${brief.whyDoingCampaign || 'Not specified'}
+- Additional context: ${brief.additionalInfo || 'None'}
+
+Generate 3 distinct campaign platform ideas as a JSON object with an "ideas" array. Only output valid JSON, no additional text.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',

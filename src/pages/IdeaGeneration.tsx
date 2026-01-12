@@ -7,12 +7,12 @@ import { supabase } from "@/integrations/supabase/client";
 import quantumLogo from "@/assets/quantum-logo.png";
 
 interface CampaignIdea {
-  title: string;
-  concept: string;
-  keyMessage: string;
-  channels: string[];
-  tactics: string[];
-  whyItWorks: string;
+  idea_name: string;
+  idea_summary: string;
+  core_thought: string;
+  key_visual_prompt: string;
+  on_brief_score: number;
+  on_brief_justification: string;
 }
 
 interface CampaignData {
@@ -240,8 +240,8 @@ const IdeaGeneration = () => {
                         {index + 1}
                       </span>
                       <div>
-                        <h3 className="font-semibold text-white text-lg mb-1">{idea.title}</h3>
-                        <p className="text-cyan-200/70 text-sm line-clamp-2">{idea.concept}</p>
+                        <h3 className="font-semibold text-white text-lg mb-1">{idea.idea_name}</h3>
+                        <p className="text-cyan-200/70 text-sm line-clamp-2">{idea.idea_summary}</p>
                       </div>
                     </div>
                     <div className="flex-shrink-0">
@@ -258,52 +258,46 @@ const IdeaGeneration = () => {
                 {expandedIdea === index && (
                   <div className="px-5 pb-5 pt-0 border-t border-cyan-500/10 mt-0">
                     <div className="pt-4 space-y-4">
-                      {/* Key Message */}
+                      {/* Core Thought */}
                       <div>
                         <h4 className="text-sm font-medium text-cyan-400 mb-1 flex items-center gap-2">
                           <MessageSquare className="w-4 h-4" />
-                          Key Message
+                          Core Thought
                         </h4>
                         <p className="text-white/90 text-sm bg-slate-700/30 rounded-lg p-3 italic">
-                          "{idea.keyMessage}"
+                          "{idea.core_thought}"
                         </p>
                       </div>
 
-                      {/* Channels */}
+                      {/* Full Summary */}
+                      <div>
+                        <h4 className="text-sm font-medium text-cyan-400 mb-2">Idea Summary</h4>
+                        <p className="text-white/80 text-sm">{idea.idea_summary}</p>
+                      </div>
+
+                      {/* Key Visual Prompt */}
                       <div>
                         <h4 className="text-sm font-medium text-cyan-400 mb-2 flex items-center gap-2">
                           <Share2 className="w-4 h-4" />
-                          Recommended Channels
+                          Key Visual Concept
                         </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {idea.channels.map((channel, i) => (
-                            <span
-                              key={i}
-                              className="px-3 py-1 bg-cyan-500/20 text-cyan-300 text-xs rounded-full border border-cyan-500/30"
-                            >
-                              {channel}
-                            </span>
-                          ))}
-                        </div>
+                        <p className="text-white/80 text-sm bg-slate-700/20 rounded-lg p-3 border border-cyan-500/10">
+                          {idea.key_visual_prompt}
+                        </p>
                       </div>
 
-                      {/* Tactics */}
-                      <div>
-                        <h4 className="text-sm font-medium text-cyan-400 mb-2">Tactical Recommendations</h4>
-                        <ul className="space-y-2">
-                          {idea.tactics.map((tactic, i) => (
-                            <li key={i} className="flex items-start gap-2 text-sm text-white/80">
-                              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-2 flex-shrink-0" />
-                              {tactic}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Why It Works */}
+                      {/* On-Brief Score */}
                       <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-lg p-4 border border-cyan-500/20">
-                        <h4 className="text-sm font-medium text-cyan-400 mb-1">Why This Works</h4>
-                        <p className="text-white/80 text-sm">{idea.whyItWorks}</p>
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-sm font-medium text-cyan-400">On-Brief Score</h4>
+                          <span className={`text-lg font-bold ${
+                            idea.on_brief_score >= 8 ? 'text-green-400' : 
+                            idea.on_brief_score >= 6 ? 'text-yellow-400' : 'text-red-400'
+                          }`}>
+                            {idea.on_brief_score}/10
+                          </span>
+                        </div>
+                        <p className="text-white/80 text-sm">{idea.on_brief_justification}</p>
                       </div>
                     </div>
                   </div>
