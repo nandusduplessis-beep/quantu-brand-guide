@@ -110,10 +110,13 @@ const IdeaGeneration = () => {
       return;
     }
 
-    // Navigate to campaign plan generation (placeholder for now)
-    toast({
-      title: "Coming soon!",
-      description: "Full campaign plan generation will be available soon.",
+    // Navigate to campaign plan generation with selected idea
+    navigate('/campaign/plan', {
+      state: {
+        brief: campaignData.brief,
+        frameworkSelection: campaignData.frameworkSelection,
+        selectedIdea: ideas[selectedIdea],
+      },
     });
   };
 
