@@ -38,6 +38,7 @@ interface CampaignBrief {
   campaignName: string;
   objective: string;
   selectedICPs: string[];
+  selectedServices: string[];
   consumerTakeout: string;
   jobToBeDone: string;
   insight: string;
@@ -74,6 +75,15 @@ const icpOptions = [
   { id: "government", label: "Government & Policy", description: "Public sector and regulatory bodies" },
 ];
 
+const serviceOptions = [
+  { id: "market-intelligence", label: "Market Intelligence", description: "Data, reports & market analysis" },
+  { id: "media", label: "Media", description: "News, content & editorial coverage" },
+  { id: "campaigns", label: "Campaigns", description: "Marketing & promotional services" },
+  { id: "advisory", label: "Advisory", description: "Strategic consulting & guidance" },
+  { id: "due-diligence", label: "Due Diligence", description: "Investment analysis & validation" },
+  { id: "ecosystem", label: "Ecosystem", description: "Events, community & networking" },
+];
+
 const fieldTooltips = {
   campaignName: { tip: "A memorable name that captures the essence.", example: "e.g., 'Q1 Quantum Awareness Push'" },
   objective: { tip: "The primary goal—be specific and measurable.", example: "e.g., 'Generate 50 qualified leads by Q2'" },
@@ -91,6 +101,7 @@ const CampaignInput = () => {
   const { toast } = useToast();
   const [brandFocusOpen, setBrandFocusOpen] = useState(false);
   const [allICPs, setAllICPs] = useState(false);
+  const [allServices, setAllServices] = useState(false);
 
   const [frameworkSelection, setFrameworkSelection] = useState<FrameworkSelection>({
     purpose: "use", brandArchetypes: "use", toneBehavior: "use", communicationPrinciples: "use",
@@ -101,6 +112,7 @@ const CampaignInput = () => {
     campaignName: "TQI Brand Equity: Trusted Intelligence Partner",
     objective: "Increase brand awareness and position TQI as the definitive source for quantum industry intelligence among investors and enterprise decision-makers, measured by 40% increase in organic traffic and 25% uplift in brand recall surveys",
     selectedICPs: ["investors", "enterprise"],
+    selectedServices: ["market-intelligence", "media", "advisory"],
     consumerTakeout: "TQI delivers the most comprehensive and actionable quantum intelligence ecosystem—from Market Intelligence reports to Due Diligence services",
     jobToBeDone: "Establish TQI as the indispensable partner for anyone navigating the quantum technology landscape, whether investing, adopting, or strategizing",
     insight: "The quantum industry is maturing rapidly, but stakeholders lack a unified, trusted source that combines media coverage, market data, advisory expertise, and investment diligence under one roof",
@@ -124,6 +136,10 @@ const CampaignInput = () => {
   const handleICPToggle = (icpId: string) => {
     const newSelection = brief.selectedICPs.includes(icpId) ? brief.selectedICPs.filter((id) => id !== icpId) : [...brief.selectedICPs, icpId];
     handleBriefChange("selectedICPs", newSelection);
+  };
+  const handleServiceToggle = (serviceId: string) => {
+    const newSelection = brief.selectedServices.includes(serviceId) ? brief.selectedServices.filter((id) => id !== serviceId) : [...brief.selectedServices, serviceId];
+    handleBriefChange("selectedServices", newSelection);
   };
   const addReferenceUrl = () => handleBriefChange("referenceUrls", [...brief.referenceUrls, ""]);
   const updateReferenceUrl = (index: number, value: string) => { const newUrls = [...brief.referenceUrls]; newUrls[index] = value; handleBriefChange("referenceUrls", newUrls); };
@@ -181,9 +197,16 @@ const CampaignInput = () => {
                 {!allICPs && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{icpOptions.map((icp) => (<div key={icp.id} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${brief.selectedICPs.includes(icp.id) ? "bg-cyan-500/20 border-cyan-400" : "bg-slate-700/30 border-slate-600 hover:border-cyan-500/50"}`} onClick={() => handleICPToggle(icp.id)}><Checkbox checked={brief.selectedICPs.includes(icp.id)} className="mt-0.5 border-cyan-500/50 data-[state=checked]:bg-cyan-500" /><div><p className="text-white text-sm font-medium">{icp.label}</p><p className="text-slate-400 text-xs">{icp.description}</p></div></div>))}</div>}
               </div>
 
+              {/* Service Offerings */}
+              <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 p-5 backdrop-blur-sm">
+                <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-cyan-500 text-slate-900 text-xs font-bold flex items-center justify-center">3</span>Service Offerings to Highlight</h2>
+                <div className="flex items-center gap-3 mb-4"><Switch checked={allServices} onCheckedChange={setAllServices} className="data-[state=checked]:bg-cyan-500" /><Label className="text-white/90 text-sm">Feature all services</Label></div>
+                {!allServices && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{serviceOptions.map((service) => (<div key={service.id} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${brief.selectedServices.includes(service.id) ? "bg-cyan-500/20 border-cyan-400" : "bg-slate-700/30 border-slate-600 hover:border-cyan-500/50"}`} onClick={() => handleServiceToggle(service.id)}><Checkbox checked={brief.selectedServices.includes(service.id)} className="mt-0.5 border-cyan-500/50 data-[state=checked]:bg-cyan-500" /><div><p className="text-white text-sm font-medium">{service.label}</p><p className="text-slate-400 text-xs">{service.description}</p></div></div>))}</div>}
+              </div>
+
               {/* Strategic Context */}
               <div className="bg-slate-800/60 rounded-xl border border-cyan-500/20 p-5 backdrop-blur-sm">
-                <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-cyan-500 text-slate-900 text-xs font-bold flex items-center justify-center">3</span>Strategic Context</h2>
+                <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-cyan-500 text-slate-900 text-xs font-bold flex items-center justify-center">4</span>Strategic Context</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5"><TooltipLabel label="Consumer Takeout" tooltipKey="consumerTakeout" /><Input placeholder="The single thought they should remember..." value={brief.consumerTakeout} onChange={(e) => handleBriefChange("consumerTakeout", e.target.value)} className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400" /></div>
                   <div className="space-y-1.5"><TooltipLabel label="Key Insight" tooltipKey="insight" /><Input placeholder="The observation driving this campaign..." value={brief.insight} onChange={(e) => handleBriefChange("insight", e.target.value)} className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400" /></div>
