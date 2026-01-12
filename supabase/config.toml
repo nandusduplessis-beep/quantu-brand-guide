@@ -1,1 +1,4 @@
 project_id = "uhorkhiqtmzoxvfcclbw"
+
+[functions.generate-campaign-ideas]
+verify_jwt = false
