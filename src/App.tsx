@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import CampaignInput from "./pages/CampaignInput";
 import IdeaGeneration from "./pages/IdeaGeneration";
 import CampaignPlan from "./pages/CampaignPlan";
+import VideoPreview from "./pages/VideoPreview";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/campaign/input" element={<CampaignInput />} />
           <Route path="/campaign/ideas" element={<IdeaGeneration />} />
           <Route path="/campaign/plan" element={<CampaignPlan />} />
+          <Route path="/video" element={<VideoPreview />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
