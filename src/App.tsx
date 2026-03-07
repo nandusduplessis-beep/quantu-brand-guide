@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import CampaignInput from "./pages/CampaignInput";
 import IdeaGeneration from "./pages/IdeaGeneration";
 import CampaignPlan from "./pages/CampaignPlan";
+import WhitePaperGenerator from "./pages/WhitePaperGenerator";
+import WhitePaperPreview from "./pages/WhitePaperPreview";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +24,8 @@ const App = () => (
           <Route path="/campaign/input" element={<CampaignInput />} />
           <Route path="/campaign/ideas" element={<IdeaGeneration />} />
           <Route path="/campaign/plan" element={<CampaignPlan />} />
+          <Route path="/whitepaper" element={<WhitePaperGenerator />} />
+          <Route path="/whitepaper/preview" element={<WhitePaperPreview />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
