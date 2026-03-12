@@ -180,10 +180,25 @@ const HexagonWordScroll: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Hexagon entrance
-  const hexEnter = Math.max(0, spring({ frame, fps, config: { damping: 20 }, delay: 0 }));
-  const hexScale = interpolate(hexEnter, [0, 1], [0.5, 1]);
+  // Phase 1: Hexagon scales in at center (frames 0–30)
+  const hexEnter = Math.max(0, spring({ frame, fps, config: { damping: 18, mass: 0.6 }, delay: 0 }));
+  const hexScale = interpolate(hexEnter, [0, 1], [0.3, 1]);
   const hexOpacity = hexEnter;
+
+  // Phase 2: Hexagon slides from center to left (frames 30–60)
+  const slideProgress = Math.max(
+    0,
+    spring({ frame: frame - 30, fps, config: { damping: 20, mass: 0.8 } })
+  );
+  // Slide left by ~200px from center (half the gap + half the scroller width)
+  const hexSlideX = interpolate(slideProgress, [0, 1], [0, -200]);
+
+  // Word scroller fades in after hexagon has moved left
+  const scrollerOpacity = interpolate(slideProgress, [0.3, 1], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const scrollerX = interpolate(slideProgress, [0, 1], [80, 0]);
 
   return (
     <AbsoluteFill
@@ -192,25 +207,31 @@ const HexagonWordScroll: React.FC = () => {
         alignItems: "center",
       }}
     >
+      {/* Hexagon — starts center, slides left */}
       <div
         style={{
+          position: "absolute",
           display: "flex",
           alignItems: "center",
-          gap: 40,
+          justifyContent: "center",
+          // translateX moves it from center (0) to left (-200)
+          transform: `translateX(${hexSlideX}px) scale(${hexScale})`,
+          opacity: hexOpacity,
         }}
       >
-        {/* Stacked hexagon */}
-        <div
-          style={{
-            transform: `scale(${hexScale})`,
-            opacity: hexOpacity,
-          }}
-        >
-          <StackedHexagon size={160} />
-        </div>
+        <StackedHexagon size={160} />
+      </div>
 
-        {/* Word scroller */}
-        <WordScroller startFrame={15} />
+      {/* Word scroller — appears to the right of hexagon after slide */}
+      <div
+        style={{
+          position: "absolute",
+          // Position to the right of where the hexagon ends up
+          transform: `translateX(${hexSlideX + 140 + scrollerX}px)`,
+          opacity: scrollerOpacity,
+        }}
+      >
+        <WordScroller startFrame={55} />
       </div>
     </AbsoluteFill>
   );
