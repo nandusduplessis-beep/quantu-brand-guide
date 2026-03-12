@@ -5,80 +5,348 @@ import {
   spring,
   useCurrentFrame,
   useVideoConfig,
-  Easing,
   Sequence,
+  Easing,
 } from "remotion";
 
 // Brand colors
 const TEAL = "#0aa0ab";
-const NAVY = "#040620";
-const BLUE = "#0014f0";
 const LIGHT_TEAL = "#6dd5ed";
-const GRAY = "#bec1c9";
 const WHITE = "#ffffff";
+const GRAY = "#bec1c9";
 
-// ─── Reusable Components ───
+// ─── Stacked Hexagon Logo (3 nested hexagons) ───
 
-const Hexagon: React.FC<{
+const StackedHexagon: React.FC<{
   size: number;
-  strokeColor: string;
-  opacity: number;
-  rotation: number;
-  strokeWidth?: number;
-}> = ({ size, strokeColor, opacity, rotation, strokeWidth = 1.5 }) => {
-  const points = Array.from({ length: 6 }, (_, i) => {
-    const angle = (Math.PI / 3) * i - Math.PI / 2;
-    return `${size / 2 + (size / 2) * Math.cos(angle)},${size / 2 + (size / 2) * Math.sin(angle)}`;
-  }).join(" ");
+  opacity?: number;
+}> = ({ size, opacity = 1 }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const layers = [
+    { scale: 1.0, color: TEAL, delay: 0, strokeWidth: 2.5 },
+    { scale: 0.68, color: LIGHT_TEAL, delay: 5, strokeWidth: 2 },
+    { scale: 0.38, color: WHITE, delay: 10, strokeWidth: 1.5 },
+  ];
+
+  const hexPoints = (s: number) =>
+    Array.from({ length: 6 }, (_, i) => {
+      const angle = (Math.PI / 3) * i - Math.PI / 2;
+      return `${s / 2 + (s / 2) * Math.cos(angle)},${s / 2 + (s / 2) * Math.sin(angle)}`;
+    }).join(" ");
 
   return (
-    <svg
-      width={size}
-      height={size}
-      style={{ opacity, transform: `rotate(${rotation}deg)`, position: "absolute" }}
-    >
-      <polygon points={points} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} />
-    </svg>
+    <div style={{ width: size, height: size, position: "relative", opacity }}>
+      {layers.map((layer, i) => {
+        const layerSize = size * layer.scale;
+        const enter = Math.max(
+          0,
+          spring({ frame: frame - layer.delay, fps, config: { damping: 20, mass: 0.6 } })
+        );
+        const offset = (size - layerSize) / 2;
+        // Subtle slow rotation for outer rings
+        const rot = i === 0 ? interpolate(frame, [0, 1200], [0, 360]) : i === 1 ? interpolate(frame, [0, 1200], [0, -360]) : 0;
+
+        return (
+          <svg
+            key={i}
+            width={layerSize}
+            height={layerSize}
+            style={{
+              position: "absolute",
+              left: offset,
+              top: offset,
+              opacity: enter,
+              transform: `scale(${enter}) rotate(${rot}deg)`,
+            }}
+          >
+            <polygon
+              points={hexPoints(layerSize)}
+              fill="none"
+              stroke={layer.color}
+              strokeWidth={layer.strokeWidth}
+            />
+          </svg>
+        );
+      })}
+    </div>
   );
 };
 
-// Background with slow-rotating hexagons and subtle glow
-const BrandBackground: React.FC = () => {
-  const frame = useCurrentFrame();
+// ─── Rolling Word Scroller ───
+// Vertically scrolls through words with a clip mask so only one shows at a time
+
+const SCROLL_WORDS = [
+  "News",
+  "Innovation",
+  "Research",
+  "Competitors",
+  "Due Diligence",
+  "Funding",
+  "Investment",
+  "Partnership",
+  "Decisions",
+  "Intelligence",
+];
+
+const WORD_HEIGHT = 90; // px per word slot
+const FRAMES_PER_WORD = 25; // how long each word shows
+const SCROLL_TRANSITION = 12; // frames for scroll animation
+
+const WordScroller: React.FC<{ startFrame?: number }> = ({ startFrame = 0 }) => {
+  const frame = useCurrentFrame() - startFrame;
+  const { fps } = useVideoConfig();
+
+  // Calculate which word we're on
+  const totalWords = SCROLL_WORDS.length;
+  const rawIndex = Math.min(frame / FRAMES_PER_WORD, totalWords - 1);
+  const currentIndex = Math.floor(rawIndex);
+
+  // Smooth scroll position using spring for each transition
+  let scrollY = 0;
+  for (let i = 0; i <= currentIndex && i < totalWords; i++) {
+    const transitionFrame = i * FRAMES_PER_WORD;
+    const prog = Math.max(
+      0,
+      spring({
+        frame: frame - transitionFrame,
+        fps,
+        config: { damping: 22, mass: 0.5, stiffness: 150 },
+      })
+    );
+    if (i > 0) {
+      scrollY += prog;
+    }
+  }
+
+  const translateY = -scrollY * WORD_HEIGHT;
+
+  // Fade in the scroller
+  const fadeIn = interpolate(frame, [0, 10], [0, 1], { extrapolateRight: "clamp" });
+
   return (
-    <AbsoluteFill style={{ backgroundColor: NAVY }}>
-      {/* Radial teal glow */}
+    <div
+      style={{
+        height: WORD_HEIGHT,
+        overflow: "hidden",
+        position: "relative",
+        opacity: fadeIn,
+      }}
+    >
+      <div
+        style={{
+          transform: `translateY(${translateY}px)`,
+          transition: "none",
+        }}
+      >
+        {SCROLL_WORDS.map((word, i) => {
+          const isLast = i === totalWords - 1;
+          return (
+            <div
+              key={i}
+              style={{
+                height: WORD_HEIGHT,
+                display: "flex",
+                alignItems: "center",
+                fontSize: 68,
+                fontWeight: 800,
+                fontFamily: "Roboto, Arial, sans-serif",
+                letterSpacing: 3,
+                whiteSpace: "nowrap",
+                ...(isLast
+                  ? {
+                      background: `linear-gradient(135deg, ${TEAL}, ${LIGHT_TEAL})`,
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                    }
+                  : { color: WHITE }),
+              }}
+            >
+              {word}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// ─── Scene 1: Hexagon + Word Scroll (frames 0–310) ───
+// Hexagon on left, word scroller to its right, scrolling through all words
+// ending on "Intelligence"
+
+const HexagonWordScroll: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  // Hexagon entrance
+  const hexEnter = Math.max(0, spring({ frame, fps, config: { damping: 20 }, delay: 0 }));
+  const hexScale = interpolate(hexEnter, [0, 1], [0.5, 1]);
+  const hexOpacity = hexEnter;
+
+  return (
+    <AbsoluteFill
+      style={{
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 40,
+        }}
+      >
+        {/* Stacked hexagon */}
+        <div
+          style={{
+            transform: `scale(${hexScale})`,
+            opacity: hexOpacity,
+          }}
+        >
+          <StackedHexagon size={160} />
+        </div>
+
+        {/* Word scroller */}
+        <WordScroller startFrame={15} />
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+// ─── Scene 2: "Intelligence Starts Here" reveal (frames 310–530) ───
+// "Intelligence" is already visible (carried from scene 1 feel),
+// it slides left, "Starts Here" reveals to its right,
+// then "The Quantum Insider" appears above
+
+const IntelligenceStartsHere: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  // "Intelligence" slides from center-right to center-left
+  const slideProgress = Math.max(
+    0,
+    spring({ frame, fps, config: { damping: 20, mass: 0.8 }, delay: 5 })
+  );
+  const intelligenceX = interpolate(slideProgress, [0, 1], [80, 0]);
+
+  // "Starts Here" fades in and slides from right
+  const startsHereProgress = Math.max(
+    0,
+    spring({ frame, fps, config: { damping: 22, mass: 0.7 }, delay: 25 })
+  );
+  const startsHereX = interpolate(startsHereProgress, [0, 1], [60, 0]);
+
+  // "The Quantum Insider" reveals above
+  const tqiProgress = Math.max(
+    0,
+    spring({ frame, fps, config: { damping: 25 }, delay: 55 })
+  );
+  const tqiY = interpolate(tqiProgress, [0, 1], [-30, 0]);
+
+  // "Beyond the Headlines" subtitle
+  const taglineProgress = Math.max(
+    0,
+    spring({ frame, fps, config: { damping: 25 }, delay: 80 })
+  );
+  const taglineY = interpolate(taglineProgress, [0, 1], [20, 0]);
+
+  // Hexagon reappears small in the corner
+  const hexProgress = Math.max(
+    0,
+    spring({ frame, fps, config: { damping: 25 }, delay: 45 })
+  );
+
+  return (
+    <AbsoluteFill
+      style={{
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      {/* Small hexagon accent top-left area */}
       <div
         style={{
           position: "absolute",
-          width: 800,
-          height: 800,
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-          background: `radial-gradient(circle, ${TEAL}10, transparent 70%)`,
-          filter: "blur(60px)",
+          left: 80,
+          top: 80,
+          opacity: hexProgress * 0.6,
+          transform: `scale(${hexProgress})`,
         }}
-      />
-      {/* Rotating hexagons */}
-      {[0, 1, 2].map((i) => {
-        const size = 400 + i * 200;
-        const rot = interpolate(frame, [0, 1800], [0, (i % 2 === 0 ? 1 : -1) * 360]);
-        const op = 0.04 + i * 0.02;
-        return (
+      >
+        <StackedHexagon size={80} />
+      </div>
+
+      <div style={{ textAlign: "center" }}>
+        {/* THE QUANTUM INSIDER */}
+        <div
+          style={{
+            fontSize: 22,
+            fontFamily: "Roboto, Arial, sans-serif",
+            color: TEAL,
+            letterSpacing: 10,
+            textTransform: "uppercase",
+            opacity: tqiProgress,
+            transform: `translateY(${tqiY}px)`,
+            marginBottom: 25,
+          }}
+        >
+          THE QUANTUM INSIDER
+        </div>
+
+        {/* Intelligence Starts Here */}
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "baseline", gap: 18 }}>
           <div
-            key={i}
             style={{
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%)",
+              fontSize: 72,
+              fontWeight: 900,
+              fontFamily: "Roboto, Arial, sans-serif",
+              background: `linear-gradient(135deg, ${TEAL}, ${LIGHT_TEAL})`,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              transform: `translateX(${intelligenceX}px)`,
+              lineHeight: 1.1,
             }}
           >
-            <Hexagon size={size} strokeColor={i === 1 ? LIGHT_TEAL : TEAL} opacity={op} rotation={rot} />
+            Intelligence
           </div>
-        );
-      })}
+          <div
+            style={{
+              fontSize: 72,
+              fontWeight: 900,
+              fontFamily: "Roboto, Arial, sans-serif",
+              color: WHITE,
+              opacity: startsHereProgress,
+              transform: `translateX(${startsHereX}px)`,
+              lineHeight: 1.1,
+            }}
+          >
+            Starts Here
+          </div>
+        </div>
+
+        {/* Glow line */}
+        <div style={{ marginTop: 25 }}>
+          <GlowLine delay={40} width={500} />
+        </div>
+
+        {/* Beyond the Headlines */}
+        <div
+          style={{
+            fontSize: 26,
+            fontFamily: "Roboto, Arial, sans-serif",
+            color: GRAY,
+            letterSpacing: 6,
+            marginTop: 30,
+            opacity: taglineProgress,
+            transform: `translateY(${taglineY}px)`,
+          }}
+        >
+          BEYOND THE HEADLINES
+        </div>
+      </div>
     </AbsoluteFill>
   );
 };
@@ -101,340 +369,33 @@ const GlowLine: React.FC<{ delay: number; width: number }> = ({ delay, width }) 
   );
 };
 
-// ─── Scene 1: "More Than News" (frames 0–90) ───
-
-const MoreThanNews: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  // "MORE THAN" fades in
-  const moreThanOpacity = spring({ frame, fps, config: { damping: 30 }, delay: 5 });
-  const moreThanY = interpolate(moreThanOpacity, [0, 1], [50, 0]);
-
-  // "NEWS" appears then gets crossed out
-  const newsOpacity = spring({ frame, fps, config: { damping: 30 }, delay: 20 });
-  const strikeProgress = interpolate(frame, [45, 60], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-    easing: Easing.out(Easing.cubic),
-  });
-
-  // Whole scene fades out
-  const fadeOut = interpolate(frame, [70, 90], [1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  return (
-    <AbsoluteFill
-      style={{
-        justifyContent: "center",
-        alignItems: "center",
-        opacity: fadeOut,
-      }}
-    >
-      <BrandBackground />
-      <div style={{ textAlign: "center", position: "relative", zIndex: 1 }}>
-        <div
-          style={{
-            fontSize: 64,
-            fontWeight: 700,
-            fontFamily: "Roboto, Arial, sans-serif",
-            color: WHITE,
-            letterSpacing: 8,
-            opacity: Math.max(0, moreThanOpacity),
-            transform: `translateY(${moreThanY}px)`,
-          }}
-        >
-          MORE THAN
-        </div>
-        <div
-          style={{
-            fontSize: 110,
-            fontWeight: 900,
-            fontFamily: "Roboto, Arial, sans-serif",
-            color: WHITE,
-            letterSpacing: 12,
-            marginTop: -10,
-            opacity: Math.max(0, newsOpacity),
-            position: "relative",
-            display: "inline-block",
-          }}
-        >
-          NEWS
-          {/* Strikethrough line */}
-          <div
-            style={{
-              position: "absolute",
-              top: "55%",
-              left: "-5%",
-              width: `${strikeProgress * 110}%`,
-              height: 6,
-              background: `linear-gradient(90deg, ${TEAL}, ${LIGHT_TEAL})`,
-              boxShadow: `0 0 15px ${TEAL}80`,
-              borderRadius: 3,
-            }}
-          />
-        </div>
-      </div>
-    </AbsoluteFill>
-  );
-};
-
-// ─── Scene 2: Word cascade (frames 90–480) ───
-
-const WORDS = [
-  "Quantum News",
-  "Innovation",
-  "Research",
-  "Competitor Intelligence",
-  "Due Diligence",
-  "Funding",
-  "Investment",
-  "Partnership",
-  "Strategic Decisions",
-];
-
-const WordCascade: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  // Each word gets ~40 frames of screen time, staggered by 40 frames
-  // Word appears, holds, then fades as the next one comes
-  const STAGGER = 38;
-
-  return (
-    <AbsoluteFill style={{ justifyContent: "center", alignItems: "center" }}>
-      <BrandBackground />
-
-      {/* Small "We do" label at the top */}
-      <div
-        style={{
-          position: "absolute",
-          top: 180,
-          zIndex: 1,
-          fontSize: 22,
-          fontFamily: "Roboto, Arial, sans-serif",
-          color: TEAL,
-          letterSpacing: 8,
-          textTransform: "uppercase",
-          opacity: interpolate(frame, [0, 15], [0, 1], { extrapolateRight: "clamp" }),
-        }}
-      >
-        WE DO
-      </div>
-
-      {/* Animated words */}
-      {WORDS.map((word, i) => {
-        const wordStart = i * STAGGER;
-        const wordEnd = wordStart + STAGGER + 15;
-
-        // Spring in
-        const enterProgress = spring({
-          frame: frame - wordStart,
-          fps,
-          config: { damping: 18, mass: 0.7, stiffness: 120 },
-        });
-
-        // Fade out when the next word is coming
-        const exitOpacity = interpolate(frame, [wordEnd - 10, wordEnd], [1, 0], {
-          extrapolateLeft: "clamp",
-          extrapolateRight: "clamp",
-        });
-
-        // Last word stays
-        const isLast = i === WORDS.length - 1;
-        const opacity = Math.max(0, enterProgress) * (isLast ? 1 : exitOpacity);
-
-        const scale = interpolate(Math.max(0, enterProgress), [0, 1], [0.7, 1]);
-        const translateY = interpolate(Math.max(0, enterProgress), [0, 1], [60, 0]);
-
-        // Alternate subtle color accents
-        const isAccented = i % 2 === 0;
-
-        return (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              zIndex: 1,
-              opacity,
-              transform: `translateY(${translateY}px) scale(${scale})`,
-              textAlign: "center",
-            }}
-          >
-            <div
-              style={{
-                fontSize: word.length > 15 ? 58 : 72,
-                fontWeight: 800,
-                fontFamily: "Roboto, Arial, sans-serif",
-                color: WHITE,
-                letterSpacing: 4,
-                ...(isAccented
-                  ? {
-                      background: `linear-gradient(135deg, ${WHITE}, ${LIGHT_TEAL})`,
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                    }
-                  : {}),
-              }}
-            >
-              {word}
-            </div>
-
-            {/* Underline accent */}
-            <div
-              style={{
-                width: interpolate(Math.max(0, enterProgress), [0, 1], [0, Math.min(word.length * 18, 350)]),
-                height: 3,
-                background: `linear-gradient(90deg, ${TEAL}, ${LIGHT_TEAL})`,
-                margin: "12px auto 0",
-                boxShadow: `0 0 10px ${TEAL}50`,
-                borderRadius: 2,
-              }}
-            />
-          </div>
-        );
-      })}
-    </AbsoluteFill>
-  );
-};
-
-// ─── Scene 3: "Intelligence Starts Here" + CTA (frames 480–750) ───
-
-const IntelligenceStartsHere: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const pulse = 0.96 + 0.04 * Math.sin((frame / fps) * Math.PI * 2.5);
-
-  // Fade in
-  const fadeIn = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: "clamp" });
-
-  return (
-    <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", opacity: fadeIn }}>
-      <BrandBackground />
-      <div style={{ textAlign: "center", position: "relative", zIndex: 1 }}>
-        {/* Main headline */}
-        <div
-          style={{
-            fontSize: 28,
-            fontFamily: "Roboto, Arial, sans-serif",
-            color: TEAL,
-            letterSpacing: 10,
-            textTransform: "uppercase",
-            opacity: Math.max(0, spring({ frame, fps, config: { damping: 30 }, delay: 10 })),
-            marginBottom: 15,
-          }}
-        >
-          THE QUANTUM INSIDER
-        </div>
-
-        <GlowLine delay={20} width={400} />
-
-        <div
-          style={{
-            marginTop: 30,
-            opacity: Math.max(0, spring({ frame, fps, config: { damping: 25 }, delay: 25 })),
-            transform: `translateY(${interpolate(
-              Math.max(0, spring({ frame, fps, config: { damping: 25 }, delay: 25 })),
-              [0, 1],
-              [30, 0]
-            )}px)`,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 72,
-              fontWeight: 900,
-              fontFamily: "Roboto, Arial, sans-serif",
-              background: `linear-gradient(135deg, ${WHITE}, ${LIGHT_TEAL})`,
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              lineHeight: 1.15,
-            }}
-          >
-            Intelligence
-          </div>
-          <div
-            style={{
-              fontSize: 72,
-              fontWeight: 900,
-              fontFamily: "Roboto, Arial, sans-serif",
-              color: WHITE,
-              lineHeight: 1.15,
-            }}
-          >
-            Starts Here
-          </div>
-        </div>
-
-        <div style={{ marginTop: 30 }}>
-          <GlowLine delay={45} width={300} />
-        </div>
-
-        {/* CTA button */}
-        <div
-          style={{
-            marginTop: 40,
-            opacity: Math.max(0, spring({ frame, fps, config: { damping: 30 }, delay: 55 })),
-            transform: `scale(${pulse})`,
-          }}
-        >
-          <div
-            style={{
-              display: "inline-block",
-              padding: "18px 55px",
-              background: `linear-gradient(135deg, ${TEAL}, ${BLUE})`,
-              borderRadius: 50,
-              fontSize: 22,
-              fontWeight: 600,
-              fontFamily: "Roboto, Arial, sans-serif",
-              color: WHITE,
-              letterSpacing: 2,
-              boxShadow: `0 0 30px ${TEAL}40`,
-            }}
-          >
-            thequantuminsider.com
-          </div>
-        </div>
-
-        {/* Powered by Resonance */}
-        <div
-          style={{
-            marginTop: 30,
-            fontSize: 14,
-            fontFamily: "Roboto, Arial, sans-serif",
-            color: GRAY,
-            letterSpacing: 6,
-            textTransform: "uppercase",
-            opacity: Math.max(0, spring({ frame, fps, config: { damping: 30 }, delay: 70 })),
-          }}
-        >
-          Powered by Resonance
-        </div>
-      </div>
-    </AbsoluteFill>
-  );
-};
-
 // ─── Main Composition ───
+// Transparent background — render with --codec vp8 (WebM) for transparency
 
 export const MyComposition: React.FC = () => {
   return (
-    <AbsoluteFill style={{ backgroundColor: NAVY }}>
-      {/* Scene 1: "More Than News" — 0 to 90 */}
-      <Sequence from={0} durationInFrames={90}>
-        <MoreThanNews />
+    <AbsoluteFill style={{ backgroundColor: "transparent" }}>
+      {/* Scene 1: Hexagon + scrolling words (0–310) */}
+      <Sequence from={0} durationInFrames={310}>
+        <HexagonWordScroll />
       </Sequence>
 
-      {/* Scene 2: Word cascade — 90 to 480 */}
-      <Sequence from={90} durationInFrames={390}>
-        <WordCascade />
+      {/* Crossfade transition */}
+      <Sequence from={290} durationInFrames={20}>
+        <AbsoluteFill
+          style={{
+            opacity: interpolate(
+              useCurrentFrame(),
+              [0, 20],
+              [0, 0],
+              { extrapolateRight: "clamp" }
+            ),
+          }}
+        />
       </Sequence>
 
-      {/* Scene 3: "Intelligence Starts Here" + CTA — 480 to 750 */}
-      <Sequence from={480} durationInFrames={270}>
+      {/* Scene 2: Intelligence Starts Here + brand reveal (310–750) */}
+      <Sequence from={310} durationInFrames={440}>
         <IntelligenceStartsHere />
       </Sequence>
     </AbsoluteFill>
