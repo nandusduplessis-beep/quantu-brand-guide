@@ -9,20 +9,23 @@ import {
   Sequence,
 } from "remotion";
 
+// Brand colors
 const TEAL = "#0aa0ab";
 const NAVY = "#040620";
 const BLUE = "#0014f0";
 const LIGHT_TEAL = "#6dd5ed";
 const GRAY = "#bec1c9";
+const WHITE = "#ffffff";
 
-// Animated hexagon shape (brand element)
+// ─── Reusable Components ───
+
 const Hexagon: React.FC<{
   size: number;
   strokeColor: string;
   opacity: number;
   rotation: number;
   strokeWidth?: number;
-}> = ({ size, strokeColor, opacity, rotation, strokeWidth = 2 }) => {
+}> = ({ size, strokeColor, opacity, rotation, strokeWidth = 1.5 }) => {
   const points = Array.from({ length: 6 }, (_, i) => {
     const angle = (Math.PI / 3) * i - Math.PI / 2;
     return `${size / 2 + (size / 2) * Math.cos(angle)},${size / 2 + (size / 2) * Math.sin(angle)}`;
@@ -32,122 +35,36 @@ const Hexagon: React.FC<{
     <svg
       width={size}
       height={size}
-      style={{
-        opacity,
-        transform: `rotate(${rotation}deg)`,
-        position: "absolute",
-      }}
+      style={{ opacity, transform: `rotate(${rotation}deg)`, position: "absolute" }}
     >
-      <polygon
-        points={points}
-        fill="none"
-        stroke={strokeColor}
-        strokeWidth={strokeWidth}
-      />
+      <polygon points={points} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} />
     </svg>
   );
 };
 
-// Fade-in and slide-up text component
-const AnimatedText: React.FC<{
-  children: React.ReactNode;
-  delay: number;
-  style?: React.CSSProperties;
-}> = ({ children, delay, style }) => {
+// Background with slow-rotating hexagons and subtle glow
+const BrandBackground: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const opacity = spring({
-    frame: frame - delay,
-    fps,
-    config: { damping: 30, mass: 0.8 },
-  });
-
-  const translateY = interpolate(
-    spring({ frame: frame - delay, fps, config: { damping: 30, mass: 0.8 } }),
-    [0, 1],
-    [40, 0]
-  );
-
   return (
-    <div
-      style={{
-        opacity: Math.max(0, opacity),
-        transform: `translateY(${translateY}px)`,
-        ...style,
-      }}
-    >
-      {children}
-    </div>
-  );
-};
-
-// Glowing line divider
-const GlowLine: React.FC<{ delay: number; width: number }> = ({
-  delay,
-  width,
-}) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const progress = spring({
-    frame: frame - delay,
-    fps,
-    config: { damping: 30, mass: 1 },
-  });
-
-  return (
-    <div
-      style={{
-        width: width * Math.max(0, progress),
-        height: 2,
-        background: `linear-gradient(90deg, transparent, ${TEAL}, ${LIGHT_TEAL}, ${TEAL}, transparent)`,
-        margin: "0 auto",
-        boxShadow: `0 0 15px ${TEAL}60`,
-      }}
-    />
-  );
-};
-
-// Scene 1: Logo Reveal with hexagons (frames 0-120)
-const LogoReveal: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const logoScale = spring({
-    frame,
-    fps,
-    config: { damping: 15, mass: 0.6 },
-    delay: 15,
-  });
-
-  const glowOpacity = interpolate(frame, [30, 60], [0, 0.6], {
-    extrapolateRight: "clamp",
-  });
-
-  // Pulsing glow
-  const pulse =
-    0.3 + 0.3 * Math.sin((frame / fps) * Math.PI * 2);
-
-  return (
-    <AbsoluteFill
-      style={{
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: NAVY,
-      }}
-    >
-      {/* Background hexagon grid */}
+    <AbsoluteFill style={{ backgroundColor: NAVY }}>
+      {/* Radial teal glow */}
+      <div
+        style={{
+          position: "absolute",
+          width: 800,
+          height: 800,
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          background: `radial-gradient(circle, ${TEAL}10, transparent 70%)`,
+          filter: "blur(60px)",
+        }}
+      />
+      {/* Rotating hexagons */}
       {[0, 1, 2].map((i) => {
-        const hexDelay = i * 10;
-        const hexOpacity = interpolate(
-          frame - hexDelay,
-          [0, 30],
-          [0, 0.08 + i * 0.03],
-          { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-        );
-        const hexRotation = interpolate(frame, [0, 900], [0, 360 * (i % 2 === 0 ? 1 : -1)]);
-        const size = 300 + i * 120;
+        const size = 400 + i * 200;
+        const rot = interpolate(frame, [0, 1800], [0, (i % 2 === 0 ? 1 : -1) * 360]);
+        const op = 0.04 + i * 0.02;
         return (
           <div
             key={i}
@@ -158,412 +75,367 @@ const LogoReveal: React.FC = () => {
               transform: "translate(-50%, -50%)",
             }}
           >
-            <Hexagon
-              size={size}
-              strokeColor={i === 0 ? TEAL : i === 1 ? LIGHT_TEAL : BLUE}
-              opacity={hexOpacity}
-              rotation={hexRotation}
-              strokeWidth={1.5}
+            <Hexagon size={size} strokeColor={i === 1 ? LIGHT_TEAL : TEAL} opacity={op} rotation={rot} />
+          </div>
+        );
+      })}
+    </AbsoluteFill>
+  );
+};
+
+// Animated teal gradient line
+const GlowLine: React.FC<{ delay: number; width: number }> = ({ delay, width }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const progress = Math.max(0, spring({ frame: frame - delay, fps, config: { damping: 30 } }));
+  return (
+    <div
+      style={{
+        width: width * progress,
+        height: 3,
+        background: `linear-gradient(90deg, transparent, ${TEAL}, ${LIGHT_TEAL}, ${TEAL}, transparent)`,
+        margin: "0 auto",
+        boxShadow: `0 0 20px ${TEAL}60`,
+      }}
+    />
+  );
+};
+
+// ─── Scene 1: "More Than News" (frames 0–90) ───
+
+const MoreThanNews: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  // "MORE THAN" fades in
+  const moreThanOpacity = spring({ frame, fps, config: { damping: 30 }, delay: 5 });
+  const moreThanY = interpolate(moreThanOpacity, [0, 1], [50, 0]);
+
+  // "NEWS" appears then gets crossed out
+  const newsOpacity = spring({ frame, fps, config: { damping: 30 }, delay: 20 });
+  const strikeProgress = interpolate(frame, [45, 60], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: Easing.out(Easing.cubic),
+  });
+
+  // Whole scene fades out
+  const fadeOut = interpolate(frame, [70, 90], [1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  return (
+    <AbsoluteFill
+      style={{
+        justifyContent: "center",
+        alignItems: "center",
+        opacity: fadeOut,
+      }}
+    >
+      <BrandBackground />
+      <div style={{ textAlign: "center", position: "relative", zIndex: 1 }}>
+        <div
+          style={{
+            fontSize: 64,
+            fontWeight: 700,
+            fontFamily: "Roboto, Arial, sans-serif",
+            color: WHITE,
+            letterSpacing: 8,
+            opacity: Math.max(0, moreThanOpacity),
+            transform: `translateY(${moreThanY}px)`,
+          }}
+        >
+          MORE THAN
+        </div>
+        <div
+          style={{
+            fontSize: 110,
+            fontWeight: 900,
+            fontFamily: "Roboto, Arial, sans-serif",
+            color: WHITE,
+            letterSpacing: 12,
+            marginTop: -10,
+            opacity: Math.max(0, newsOpacity),
+            position: "relative",
+            display: "inline-block",
+          }}
+        >
+          NEWS
+          {/* Strikethrough line */}
+          <div
+            style={{
+              position: "absolute",
+              top: "55%",
+              left: "-5%",
+              width: `${strikeProgress * 110}%`,
+              height: 6,
+              background: `linear-gradient(90deg, ${TEAL}, ${LIGHT_TEAL})`,
+              boxShadow: `0 0 15px ${TEAL}80`,
+              borderRadius: 3,
+            }}
+          />
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+// ─── Scene 2: Word cascade (frames 90–480) ───
+
+const WORDS = [
+  "Quantum News",
+  "Innovation",
+  "Research",
+  "Competitor Intelligence",
+  "Due Diligence",
+  "Funding",
+  "Investment",
+  "Partnership",
+  "Strategic Decisions",
+];
+
+const WordCascade: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  // Each word gets ~40 frames of screen time, staggered by 40 frames
+  // Word appears, holds, then fades as the next one comes
+  const STAGGER = 38;
+
+  return (
+    <AbsoluteFill style={{ justifyContent: "center", alignItems: "center" }}>
+      <BrandBackground />
+
+      {/* Small "We do" label at the top */}
+      <div
+        style={{
+          position: "absolute",
+          top: 180,
+          zIndex: 1,
+          fontSize: 22,
+          fontFamily: "Roboto, Arial, sans-serif",
+          color: TEAL,
+          letterSpacing: 8,
+          textTransform: "uppercase",
+          opacity: interpolate(frame, [0, 15], [0, 1], { extrapolateRight: "clamp" }),
+        }}
+      >
+        WE DO
+      </div>
+
+      {/* Animated words */}
+      {WORDS.map((word, i) => {
+        const wordStart = i * STAGGER;
+        const wordEnd = wordStart + STAGGER + 15;
+
+        // Spring in
+        const enterProgress = spring({
+          frame: frame - wordStart,
+          fps,
+          config: { damping: 18, mass: 0.7, stiffness: 120 },
+        });
+
+        // Fade out when the next word is coming
+        const exitOpacity = interpolate(frame, [wordEnd - 10, wordEnd], [1, 0], {
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+        });
+
+        // Last word stays
+        const isLast = i === WORDS.length - 1;
+        const opacity = Math.max(0, enterProgress) * (isLast ? 1 : exitOpacity);
+
+        const scale = interpolate(Math.max(0, enterProgress), [0, 1], [0.7, 1]);
+        const translateY = interpolate(Math.max(0, enterProgress), [0, 1], [60, 0]);
+
+        // Alternate subtle color accents
+        const isAccented = i % 2 === 0;
+
+        return (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              zIndex: 1,
+              opacity,
+              transform: `translateY(${translateY}px) scale(${scale})`,
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                fontSize: word.length > 15 ? 58 : 72,
+                fontWeight: 800,
+                fontFamily: "Roboto, Arial, sans-serif",
+                color: WHITE,
+                letterSpacing: 4,
+                ...(isAccented
+                  ? {
+                      background: `linear-gradient(135deg, ${WHITE}, ${LIGHT_TEAL})`,
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                    }
+                  : {}),
+              }}
+            >
+              {word}
+            </div>
+
+            {/* Underline accent */}
+            <div
+              style={{
+                width: interpolate(Math.max(0, enterProgress), [0, 1], [0, Math.min(word.length * 18, 350)]),
+                height: 3,
+                background: `linear-gradient(90deg, ${TEAL}, ${LIGHT_TEAL})`,
+                margin: "12px auto 0",
+                boxShadow: `0 0 10px ${TEAL}50`,
+                borderRadius: 2,
+              }}
             />
           </div>
         );
       })}
+    </AbsoluteFill>
+  );
+};
 
-      {/* Logo text */}
-      <div
-        style={{
-          transform: `scale(${logoScale})`,
-          textAlign: "center",
-          position: "relative",
-        }}
-      >
+// ─── Scene 3: "Intelligence Starts Here" + CTA (frames 480–750) ───
+
+const IntelligenceStartsHere: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const pulse = 0.96 + 0.04 * Math.sin((frame / fps) * Math.PI * 2.5);
+
+  // Fade in
+  const fadeIn = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: "clamp" });
+
+  return (
+    <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", opacity: fadeIn }}>
+      <BrandBackground />
+      <div style={{ textAlign: "center", position: "relative", zIndex: 1 }}>
+        {/* Main headline */}
         <div
           style={{
-            fontSize: 72,
-            fontWeight: 700,
+            fontSize: 28,
             fontFamily: "Roboto, Arial, sans-serif",
-            color: "white",
-            letterSpacing: 6,
-            textShadow: `0 0 ${30 + pulse * 20}px ${TEAL}${Math.round(glowOpacity * 255).toString(16).padStart(2, "0")}`,
+            color: TEAL,
+            letterSpacing: 10,
+            textTransform: "uppercase",
+            opacity: Math.max(0, spring({ frame, fps, config: { damping: 30 }, delay: 10 })),
+            marginBottom: 15,
           }}
         >
           THE QUANTUM INSIDER
         </div>
-        <div style={{ marginTop: 15 }}>
-          <GlowLine delay={40} width={500} />
-        </div>
-        <AnimatedText delay={55}>
-          <div
-            style={{
-              fontSize: 20,
-              fontFamily: "Roboto, Arial, sans-serif",
-              color: GRAY,
-              letterSpacing: 8,
-              marginTop: 20,
-              textTransform: "uppercase",
-            }}
-          >
-            Powered by Resonance
-          </div>
-        </AnimatedText>
-      </div>
-    </AbsoluteFill>
-  );
-};
 
-// Scene 2: Tagline reveal (frames 120-300)
-const TaglineReveal: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+        <GlowLine delay={20} width={400} />
 
-  // Particle-like dots floating
-  const dots = Array.from({ length: 20 }, (_, i) => {
-    const x = (i * 137.5) % 100;
-    const baseY = (i * 73.1) % 100;
-    const y = baseY + Math.sin((frame + i * 20) / 30) * 3;
-    const size = 2 + (i % 3);
-    const opacity = 0.1 + (i % 5) * 0.04;
-    return { x, y, size, opacity };
-  });
-
-  return (
-    <AbsoluteFill
-      style={{
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: NAVY,
-      }}
-    >
-      {/* Floating particles */}
-      {dots.map((dot, i) => (
         <div
-          key={i}
           style={{
-            position: "absolute",
-            left: `${dot.x}%`,
-            top: `${dot.y}%`,
-            width: dot.size,
-            height: dot.size,
-            borderRadius: "50%",
-            backgroundColor: TEAL,
-            opacity: dot.opacity,
+            marginTop: 30,
+            opacity: Math.max(0, spring({ frame, fps, config: { damping: 25 }, delay: 25 })),
+            transform: `translateY(${interpolate(
+              Math.max(0, spring({ frame, fps, config: { damping: 25 }, delay: 25 })),
+              [0, 1],
+              [30, 0]
+            )}px)`,
           }}
-        />
-      ))}
-
-      {/* Gradient accent line on the left */}
-      <div
-        style={{
-          position: "absolute",
-          left: 100,
-          top: "50%",
-          transform: "translateY(-50%)",
-          width: 3,
-          height: interpolate(frame, [0, 30], [0, 200], {
-            extrapolateRight: "clamp",
-          }),
-          background: `linear-gradient(180deg, ${TEAL}, ${BLUE})`,
-          borderRadius: 2,
-        }}
-      />
-
-      <div
-        style={{
-          maxWidth: 900,
-          paddingLeft: 140,
-          paddingRight: 100,
-        }}
-      >
-        <AnimatedText delay={10}>
+        >
           <div
             style={{
-              fontSize: 42,
-              fontWeight: 700,
+              fontSize: 72,
+              fontWeight: 900,
               fontFamily: "Roboto, Arial, sans-serif",
-              color: "white",
-              lineHeight: 1.3,
-            }}
-          >
-            Actionable Quantum Intelligence
-          </div>
-        </AnimatedText>
-
-        <AnimatedText delay={30}>
-          <div
-            style={{
-              fontSize: 42,
-              fontWeight: 700,
-              fontFamily: "Roboto, Arial, sans-serif",
-              background: `linear-gradient(135deg, ${TEAL}, ${LIGHT_TEAL})`,
+              background: `linear-gradient(135deg, ${WHITE}, ${LIGHT_TEAL})`,
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
-              lineHeight: 1.3,
+              lineHeight: 1.15,
             }}
           >
-            & Bespoke Solutions
+            Intelligence
           </div>
-        </AnimatedText>
-
-        <div style={{ marginTop: 25 }}>
-          <GlowLine delay={50} width={400} />
-        </div>
-
-        <AnimatedText delay={60}>
           <div
             style={{
-              fontSize: 22,
+              fontSize: 72,
+              fontWeight: 900,
               fontFamily: "Roboto, Arial, sans-serif",
-              color: GRAY,
-              marginTop: 25,
-              lineHeight: 1.6,
+              color: WHITE,
+              lineHeight: 1.15,
             }}
           >
-            Empowering confident decisions that move the industry forward.
+            Starts Here
           </div>
-        </AnimatedText>
-      </div>
-    </AbsoluteFill>
-  );
-};
-
-// Scene 3: Key offerings (frames 300-540)
-const KeyOfferings: React.FC = () => {
-  const frame = useCurrentFrame();
-
-  const offerings = [
-    { label: "Market Intelligence", icon: "◆" },
-    { label: "Strategic Advisory", icon: "◆" },
-    { label: "Due Diligence", icon: "◆" },
-    { label: "Ecosystem Mapping", icon: "◆" },
-  ];
-
-  return (
-    <AbsoluteFill
-      style={{
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: NAVY,
-      }}
-    >
-      {/* Subtle radial gradient background */}
-      <div
-        style={{
-          position: "absolute",
-          width: "100%",
-          height: "100%",
-          background: `radial-gradient(ellipse at center, ${TEAL}08 0%, transparent 70%)`,
-        }}
-      />
-
-      <AnimatedText delay={5}>
-        <div
-          style={{
-            fontSize: 18,
-            fontFamily: "Roboto, Arial, sans-serif",
-            color: TEAL,
-            letterSpacing: 6,
-            textTransform: "uppercase",
-            marginBottom: 40,
-            textAlign: "center",
-          }}
-        >
-          Our Solutions
         </div>
-      </AnimatedText>
 
-      <div
-        style={{
-          display: "flex",
-          gap: 40,
-          justifyContent: "center",
-          flexWrap: "wrap",
-        }}
-      >
-        {offerings.map((item, i) => {
-          const delay = 20 + i * 15;
-          return (
-            <AnimatedText key={i} delay={delay}>
-              <div
-                style={{
-                  width: 230,
-                  padding: "35px 25px",
-                  border: `1px solid ${TEAL}30`,
-                  borderRadius: 8,
-                  textAlign: "center",
-                  background: `linear-gradient(180deg, ${TEAL}08, transparent)`,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 28,
-                    color: TEAL,
-                    marginBottom: 15,
-                  }}
-                >
-                  {item.icon}
-                </div>
-                <div
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 600,
-                    fontFamily: "Roboto, Arial, sans-serif",
-                    color: "white",
-                  }}
-                >
-                  {item.label}
-                </div>
-              </div>
-            </AnimatedText>
-          );
-        })}
-      </div>
-    </AbsoluteFill>
-  );
-};
-
-// Scene 4: CTA (frames 540-750)
-const CallToAction: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const pulse = 0.95 + 0.05 * Math.sin((frame / fps) * Math.PI * 3);
-
-  return (
-    <AbsoluteFill
-      style={{
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: NAVY,
-      }}
-    >
-      {/* Background glow */}
-      <div
-        style={{
-          position: "absolute",
-          width: 600,
-          height: 600,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, ${TEAL}15, transparent 70%)`,
-          filter: "blur(40px)",
-        }}
-      />
-
-      <AnimatedText delay={10}>
-        <div
-          style={{
-            fontSize: 48,
-            fontWeight: 700,
-            fontFamily: "Roboto, Arial, sans-serif",
-            color: "white",
-            textAlign: "center",
-            marginBottom: 15,
-          }}
-        >
-          From Insight to Action
+        <div style={{ marginTop: 30 }}>
+          <GlowLine delay={45} width={300} />
         </div>
-      </AnimatedText>
 
-      <AnimatedText delay={30}>
+        {/* CTA button */}
         <div
           style={{
-            fontSize: 24,
-            fontFamily: "Roboto, Arial, sans-serif",
-            color: GRAY,
-            textAlign: "center",
-            marginBottom: 45,
-          }}
-        >
-          Transform intelligence into impact
-        </div>
-      </AnimatedText>
-
-      <AnimatedText delay={50}>
-        <div
-          style={{
+            marginTop: 40,
+            opacity: Math.max(0, spring({ frame, fps, config: { damping: 30 }, delay: 55 })),
             transform: `scale(${pulse})`,
-            padding: "18px 60px",
-            background: `linear-gradient(135deg, ${TEAL}, ${BLUE})`,
-            borderRadius: 50,
-            fontSize: 22,
-            fontWeight: 600,
-            fontFamily: "Roboto, Arial, sans-serif",
-            color: "white",
-            letterSpacing: 2,
-            boxShadow: `0 0 30px ${TEAL}40`,
           }}
         >
-          thequantuminsider.com
+          <div
+            style={{
+              display: "inline-block",
+              padding: "18px 55px",
+              background: `linear-gradient(135deg, ${TEAL}, ${BLUE})`,
+              borderRadius: 50,
+              fontSize: 22,
+              fontWeight: 600,
+              fontFamily: "Roboto, Arial, sans-serif",
+              color: WHITE,
+              letterSpacing: 2,
+              boxShadow: `0 0 30px ${TEAL}40`,
+            }}
+          >
+            thequantuminsider.com
+          </div>
         </div>
-      </AnimatedText>
 
-      <AnimatedText delay={70}>
+        {/* Powered by Resonance */}
         <div
           style={{
+            marginTop: 30,
             fontSize: 14,
             fontFamily: "Roboto, Arial, sans-serif",
             color: GRAY,
-            letterSpacing: 4,
-            marginTop: 30,
+            letterSpacing: 6,
             textTransform: "uppercase",
+            opacity: Math.max(0, spring({ frame, fps, config: { damping: 30 }, delay: 70 })),
           }}
         >
           Powered by Resonance
         </div>
-      </AnimatedText>
+      </div>
     </AbsoluteFill>
   );
 };
 
-// Crossfade transition wrapper
-const CrossFade: React.FC<{
-  children: React.ReactNode;
-  durationInFrames: number;
-}> = ({ children, durationInFrames }) => {
-  const frame = useCurrentFrame();
-  const fadeIn = interpolate(frame, [0, 20], [0, 1], {
-    extrapolateRight: "clamp",
-    easing: Easing.ease,
-  });
-  const fadeOut = interpolate(
-    frame,
-    [durationInFrames - 20, durationInFrames],
-    [1, 0],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.ease }
-  );
+// ─── Main Composition ───
 
-  return (
-    <AbsoluteFill style={{ opacity: Math.min(fadeIn, fadeOut) }}>
-      {children}
-    </AbsoluteFill>
-  );
-};
-
-// Main composition
 export const MyComposition: React.FC = () => {
   return (
     <AbsoluteFill style={{ backgroundColor: NAVY }}>
-      <Sequence from={0} durationInFrames={140}>
-        <CrossFade durationInFrames={140}>
-          <LogoReveal />
-        </CrossFade>
+      {/* Scene 1: "More Than News" — 0 to 90 */}
+      <Sequence from={0} durationInFrames={90}>
+        <MoreThanNews />
       </Sequence>
 
-      <Sequence from={120} durationInFrames={200}>
-        <CrossFade durationInFrames={200}>
-          <TaglineReveal />
-        </CrossFade>
+      {/* Scene 2: Word cascade — 90 to 480 */}
+      <Sequence from={90} durationInFrames={390}>
+        <WordCascade />
       </Sequence>
 
-      <Sequence from={300} durationInFrames={260}>
-        <CrossFade durationInFrames={260}>
-          <KeyOfferings />
-        </CrossFade>
-      </Sequence>
-
-      <Sequence from={540} durationInFrames={360}>
-        <CrossFade durationInFrames={360}>
-          <CallToAction />
-        </CrossFade>
+      {/* Scene 3: "Intelligence Starts Here" + CTA — 480 to 750 */}
+      <Sequence from={480} durationInFrames={270}>
+        <IntelligenceStartsHere />
       </Sequence>
     </AbsoluteFill>
   );
