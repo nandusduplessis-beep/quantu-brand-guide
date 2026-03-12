@@ -5,7 +5,7 @@ import BrandCampaign from "@/components/BrandCampaign";
 import CollectiveImpact from "@/components/CollectiveImpact";
 import { EmailPopup } from "@/components/EmailPopup";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Sparkles, Megaphone, FileText } from "lucide-react";
+import { Copy, Sparkles, Megaphone, FileText, Film } from "lucide-react";
 import quantumLogo from "@/assets/quantum-logo.png";
 import iconMarketIntelligence from "@/assets/icon-market-intelligence.png";
 import iconEcosystem from "@/assets/icon-ecosystem.png";
@@ -258,9 +258,16 @@ These archetypes inform tone and approach but are not requirements to explicitly
               Generate Lovable Prompt
               <Copy className="w-4 h-4 ml-1" />
             </button>
+            <button
+              onClick={() => navigate("/video-motion")}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+            >
+              <Film className="w-5 h-5" />
+              Video & Motion Graphics
+            </button>
           </div>
           <p className="text-sm text-muted-foreground mt-3">
-            Create a campaign, generate a white paper, or copy brand guidelines to paste into Lovable
+            Create a campaign, generate a white paper, explore motion graphics, or copy brand guidelines to paste into Lovable
           </p>
         </section>
 
