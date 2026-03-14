@@ -1,95 +1,54 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Player } from '@remotion/player';
 import { useNavigate } from 'react-router-dom';
-import { BrandIntro } from '@/remotion/compositions/BrandIntro';
-import { LowerThird } from '@/remotion/compositions/LowerThird';
-import { DataBarChart } from '@/remotion/compositions/DataBarChart';
-import { TypewriterTitle } from '@/remotion/compositions/TypewriterTitle';
-import { HighlightTagline } from '@/remotion/compositions/HighlightTagline';
-import { BRAND } from '@/remotion/brand';
 import { ArrowLeft, Play, Film } from 'lucide-react';
+import { compositionRegistry, type CompositionKey } from '@/remotion/compositionSchema';
+import { PropsEditor } from '@/components/video-studio/PropsEditor';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
-type CompositionKey = 'BrandIntro' | 'LowerThird' | 'DataBarChart' | 'TypewriterTitle' | 'HighlightTagline';
+const COMPOSITION_KEYS = Object.keys(compositionRegistry) as CompositionKey[];
 
-const compositions: Record<CompositionKey, {
-  component: React.FC<any>;
-  label: string;
-  description: string;
-  durationInFrames: number;
-  defaultProps: Record<string, any>;
-}> = {
-  BrandIntro: {
-    component: BrandIntro,
-    label: 'Brand Intro',
-    description: 'Animated brand title with tagline reveal',
-    durationInFrames: 150,
-    defaultProps: {
-      title: BRAND.name,
-      subtitle: BRAND.tagline,
-    },
-  },
-  LowerThird: {
-    component: LowerThird,
-    label: 'Lower Third',
-    description: 'Name and title overlay for video interviews',
-    durationInFrames: 150,
-    defaultProps: {
-      name: 'Dr. Jane Smith',
-      role: 'Quantum Market Intelligence Analyst',
-    },
-  },
-  DataBarChart: {
-    component: DataBarChart,
-    label: 'Data Bar Chart',
-    description: 'Animated bar chart for market data visualization',
-    durationInFrames: 120,
-    defaultProps: {
-      title: 'Quantum Computing Market Growth',
-      data: [
-        { label: '2022', value: 8.6 },
-        { label: '2023', value: 12.4 },
-        { label: '2024', value: 18.2 },
-        { label: '2025', value: 28.9 },
-        { label: '2026', value: 42.1 },
-      ],
-    },
-  },
-  TypewriterTitle: {
-    component: TypewriterTitle,
-    label: 'Typewriter Title',
-    description: 'Typewriter text reveal for headlines',
-    durationInFrames: 180,
-    defaultProps: {
-      text: BRAND.tagline,
-    },
-  },
-  HighlightTagline: {
-    component: HighlightTagline,
-    label: 'Highlight Tagline',
-    description: 'Text with animated word highlight effect',
-    durationInFrames: 120,
-    defaultProps: {
-      text: 'Empowering confident decisions that move the industry forward.',
-      highlightWord: 'confident decisions',
-    },
-  },
+// Initialize props state from defaults
+const initPropsState = () => {
+  const state: Record<CompositionKey, Record<string, any>> = {} as any;
+  for (const key of COMPOSITION_KEYS) {
+    state[key] = { ...compositionRegistry[key].defaultProps };
+  }
+  return state;
 };
 
 const VideoStudio = () => {
   const navigate = useNavigate();
-  const [activeComposition, setActiveComposition] = useState<CompositionKey>('BrandIntro');
-  const comp = compositions[activeComposition];
+  const [activeKey, setActiveKey] = useState<CompositionKey>('BrandIntro');
+  const [propsState, setPropsState] = useState(initPropsState);
+
+  const comp = compositionRegistry[activeKey];
+  const currentProps = propsState[activeKey];
+
+  const handlePropChange = useCallback(
+    (key: string, value: any) => {
+      setPropsState((prev) => ({
+        ...prev,
+        [activeKey]: { ...prev[activeKey], [key]: value },
+      }));
+    },
+    [activeKey],
+  );
+
+  const handleReset = useCallback(() => {
+    setPropsState((prev) => ({
+      ...prev,
+      [activeKey]: { ...compositionRegistry[activeKey].defaultProps },
+    }));
+  }, [activeKey]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <header className="shrink-0 bg-background/80 backdrop-blur-lg border-b border-border shadow-sm">
+        <div className="px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate('/')}
-              className="text-muted-foreground hover:text-foreground"
-            >
+            <button onClick={() => navigate('/')} className="text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2">
@@ -97,69 +56,78 @@ const VideoStudio = () => {
               <h1 className="text-xl font-bold">TQI Video Studio</h1>
             </div>
           </div>
-          <span className="text-sm text-muted-foreground">
-            Powered by Remotion
-          </span>
+          <span className="text-sm text-muted-foreground">Powered by Remotion</span>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar - Composition list */}
-          <div className="lg:col-span-1">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-              Compositions
-            </h2>
-            <div className="space-y-2">
-              {(Object.entries(compositions) as [CompositionKey, typeof comp][]).map(
-                ([key, value]) => (
-                  <button
-                    key={key}
-                    onClick={() => setActiveComposition(key)}
-                    className={`w-full text-left p-3 rounded-lg border transition-colors ${
-                      activeComposition === key
-                        ? 'border-[#0aa0ab] bg-[#0aa0ab]/10 text-foreground'
-                        : 'border-border hover:border-[#0aa0ab]/50 text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Play className="w-3 h-3" />
-                      <span className="font-medium text-sm">{value.label}</span>
-                    </div>
-                    <p className="text-xs mt-1 opacity-70">{value.description}</p>
-                  </button>
-                ),
-              )}
-            </div>
+      {/* 3-panel layout */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left: Composition selector */}
+        <div className="w-56 shrink-0 border-r border-border p-4 overflow-y-auto">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            Templates
+          </h2>
+          <div className="space-y-1.5">
+            {COMPOSITION_KEYS.map((key) => {
+              const entry = compositionRegistry[key];
+              return (
+                <button
+                  key={key}
+                  onClick={() => setActiveKey(key)}
+                  className={`w-full text-left p-2.5 rounded-lg border transition-colors ${
+                    activeKey === key
+                      ? 'border-[#0aa0ab] bg-[#0aa0ab]/10 text-foreground'
+                      : 'border-transparent hover:border-border text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Play className="w-3 h-3 shrink-0" />
+                    <span className="font-medium text-sm">{entry.label}</span>
+                  </div>
+                  <p className="text-xs mt-0.5 opacity-60 pl-5">{entry.description}</p>
+                </button>
+              );
+            })}
           </div>
+        </div>
 
-          {/* Main - Player */}
-          <div className="lg:col-span-3">
-            <div className="rounded-xl overflow-hidden border border-border bg-black">
-              <Player
-                component={comp.component}
-                inputProps={comp.defaultProps}
-                durationInFrames={comp.durationInFrames}
-                fps={30}
-                compositionWidth={1920}
-                compositionHeight={1080}
-                style={{ width: '100%' }}
-                controls
-                autoPlay
-                loop
+        {/* Center: Player */}
+        <div className="flex-1 flex flex-col items-center justify-center p-6 min-w-0">
+          <div className="w-full max-w-4xl rounded-xl overflow-hidden border border-border bg-black">
+            <Player
+              component={comp.component}
+              inputProps={currentProps}
+              durationInFrames={comp.durationInFrames}
+              fps={30}
+              compositionWidth={1920}
+              compositionHeight={1080}
+              style={{ width: '100%' }}
+              controls
+              autoPlay
+              loop
+            />
+          </div>
+          <div className="mt-4 flex gap-4 text-xs text-muted-foreground">
+            <span>1920 x 1080</span>
+            <span>30 fps</span>
+            <span>
+              {comp.durationInFrames} frames ({(comp.durationInFrames / 30).toFixed(1)}s)
+            </span>
+          </div>
+        </div>
+
+        {/* Right: Props editor */}
+        <div className="w-72 shrink-0 border-l border-border">
+          <ScrollArea className="h-full">
+            <div className="p-4">
+              <PropsEditor
+                composition={comp}
+                values={currentProps}
+                onChange={handlePropChange}
+                onReset={handleReset}
               />
             </div>
-
-            <div className="mt-6 p-6 rounded-lg border border-border bg-card">
-              <h3 className="text-lg font-semibold mb-2">{comp.label}</h3>
-              <p className="text-muted-foreground text-sm mb-4">{comp.description}</p>
-              <div className="flex gap-4 text-xs text-muted-foreground">
-                <span>1920 x 1080</span>
-                <span>30 fps</span>
-                <span>{comp.durationInFrames} frames ({(comp.durationInFrames / 30).toFixed(1)}s)</span>
-              </div>
-            </div>
-          </div>
+          </ScrollArea>
         </div>
       </div>
     </div>
