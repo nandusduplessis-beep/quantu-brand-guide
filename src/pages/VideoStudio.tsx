@@ -1,7 +1,9 @@
 import { useState, useCallback } from 'react';
 import { Player } from '@remotion/player';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Film } from 'lucide-react';
+import { ArrowLeft, Play, Film, Download, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useVideoExport } from '@/hooks/useVideoExport';
 import { compositionRegistry, type CompositionKey } from '@/remotion/compositionSchema';
 import { PropsEditor } from '@/components/video-studio/PropsEditor';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -22,6 +24,7 @@ const VideoStudio = () => {
   const [activeKey, setActiveKey] = useState<CompositionKey>('BrandIntro');
   const [propsState, setPropsState] = useState(initPropsState);
 
+  const { status, error, exportVideo, reset: resetExport } = useVideoExport();
   const comp = compositionRegistry[activeKey];
   const currentProps = propsState[activeKey];
 
@@ -107,12 +110,40 @@ const VideoStudio = () => {
               loop
             />
           </div>
-          <div className="mt-4 flex gap-4 text-xs text-muted-foreground">
-            <span>1920 x 1080</span>
-            <span>30 fps</span>
-            <span>
-              {comp.durationInFrames} frames ({(comp.durationInFrames / 30).toFixed(1)}s)
-            </span>
+          <div className="mt-4 flex items-center gap-4">
+            <div className="flex gap-4 text-xs text-muted-foreground">
+              <span>1920 x 1080</span>
+              <span>30 fps</span>
+              <span>
+                {comp.durationInFrames} frames ({(comp.durationInFrames / 30).toFixed(1)}s)
+              </span>
+            </div>
+            <div className="ml-auto">
+              {status === 'idle' && (
+                <Button
+                  size="sm"
+                  className="bg-[#0aa0ab] hover:bg-[#0aa0ab]/80"
+                  onClick={() => exportVideo(activeKey, currentProps)}
+                >
+                  <Download className="w-4 h-4 mr-1" /> Export MP4
+                </Button>
+              )}
+              {status === 'rendering' && (
+                <Button size="sm" disabled>
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" /> Rendering...
+                </Button>
+              )}
+              {status === 'done' && (
+                <Button size="sm" variant="outline" onClick={resetExport}>
+                  <CheckCircle className="w-4 h-4 mr-1 text-green-500" /> Downloaded
+                </Button>
+              )}
+              {status === 'error' && (
+                <Button size="sm" variant="destructive" onClick={resetExport}>
+                  <AlertCircle className="w-4 h-4 mr-1" /> {error || 'Failed'} — Retry
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
