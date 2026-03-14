@@ -1,0 +1,15 @@
+{
+  "name": "remotion-prompt-tool",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Remotion prompt generator and code interpreter for TQI brand videos",
+  "bin": {
+    "remotion-tool": "./index.ts"
+  },
+  "scripts": {
+    "start": "npx tsx index.ts",
+    "generate": "npx tsx index.ts generate",
+    "explain": "npx tsx index.ts explain",
+    "validate": "npx tsx index.ts validate"
+  }
+}

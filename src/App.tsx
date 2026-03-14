@@ -9,7 +9,9 @@ import IdeaGeneration from "./pages/IdeaGeneration";
 import CampaignPlan from "./pages/CampaignPlan";
 import WhitePaperGenerator from "./pages/WhitePaperGenerator";
 import WhitePaperPreview from "./pages/WhitePaperPreview";
+import VideoStudio from "./pages/VideoStudio";
 import NotFound from "./pages/NotFound";
+import { PasswordGate } from "./components/PasswordGate";
 
 const queryClient = new QueryClient();
 
@@ -18,6 +20,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <PasswordGate>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
@@ -26,10 +29,12 @@ const App = () => (
           <Route path="/campaign/plan" element={<CampaignPlan />} />
           <Route path="/whitepaper" element={<WhitePaperGenerator />} />
           <Route path="/whitepaper/preview" element={<WhitePaperPreview />} />
+          <Route path="/video-studio" element={<VideoStudio />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      </PasswordGate>
     </TooltipProvider>
   </QueryClientProvider>
 );

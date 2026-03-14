@@ -1,0 +1,85 @@
+import { Composition, Folder } from 'remotion';
+import { BrandIntro } from './compositions/BrandIntro';
+import { LowerThird } from './compositions/LowerThird';
+import { DataBarChart } from './compositions/DataBarChart';
+import { TypewriterTitle } from './compositions/TypewriterTitle';
+import { HighlightTagline } from './compositions/HighlightTagline';
+import { BRAND } from './brand';
+
+export const RemotionRoot = () => {
+  return (
+    <>
+      <Folder name="Brand">
+        <Composition
+          id="BrandIntro"
+          component={BrandIntro}
+          durationInFrames={150}
+          fps={30}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            title: BRAND.name,
+            subtitle: BRAND.tagline,
+          }}
+        />
+        <Composition
+          id="LowerThird"
+          component={LowerThird}
+          durationInFrames={150}
+          fps={30}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            name: 'Dr. Jane Smith',
+            role: 'Quantum Market Intelligence Analyst',
+          }}
+        />
+      </Folder>
+      <Folder name="Data">
+        <Composition
+          id="DataBarChart"
+          component={DataBarChart}
+          durationInFrames={120}
+          fps={30}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            title: 'Quantum Computing Market Growth',
+            data: [
+              { label: '2022', value: 8.6 },
+              { label: '2023', value: 12.4 },
+              { label: '2024', value: 18.2 },
+              { label: '2025', value: 28.9 },
+              { label: '2026', value: 42.1 },
+            ],
+          }}
+        />
+      </Folder>
+      <Folder name="Text">
+        <Composition
+          id="TypewriterTitle"
+          component={TypewriterTitle}
+          durationInFrames={180}
+          fps={30}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            text: BRAND.tagline,
+          }}
+        />
+        <Composition
+          id="HighlightTagline"
+          component={HighlightTagline}
+          durationInFrames={120}
+          fps={30}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            text: 'Empowering confident decisions that move the industry forward.',
+            highlightWord: 'confident decisions',
+          }}
+        />
+      </Folder>
+    </>
+  );
+};
