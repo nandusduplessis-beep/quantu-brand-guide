@@ -16,9 +16,10 @@ const { fontFamily } = loadFont('normal', {
 type LowerThirdProps = {
   name: string;
   role: string;
+  avatarUrl?: string;
 };
 
-export const LowerThird: React.FC<LowerThirdProps> = ({ name, role }) => {
+export const LowerThird: React.FC<LowerThirdProps> = ({ name, role, avatarUrl }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
@@ -82,10 +83,25 @@ export const LowerThird: React.FC<LowerThirdProps> = ({ name, role }) => {
           }}
         />
 
+        {/* Avatar */}
+        {avatarUrl && (
+          <img
+            src={avatarUrl}
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              objectFit: 'cover',
+              marginLeft: 16,
+              border: `2px solid ${BRAND.colors.quantumTeal}`,
+            }}
+          />
+        )}
+
         {/* Content */}
         <div
           style={{
-            marginLeft: 16,
+            marginLeft: avatarUrl ? 12 : 16,
             backgroundColor: `${BRAND.colors.deepNavy}ee`,
             padding: '16px 32px',
             borderRadius: '0 8px 8px 0',

@@ -14,12 +14,13 @@ const { fontFamily } = loadFont('normal', {
 
 type TypewriterTitleProps = {
   text: string;
+  backgroundImage?: string;
 };
 
 const CHAR_FRAMES = 2;
 const CURSOR_BLINK_FRAMES = 16;
 
-export const TypewriterTitle: React.FC<TypewriterTitleProps> = ({ text }) => {
+export const TypewriterTitle: React.FC<TypewriterTitleProps> = ({ text, backgroundImage }) => {
   const frame = useCurrentFrame();
 
   const typedChars = Math.min(text.length, Math.floor(frame / CHAR_FRAMES));
@@ -43,6 +44,22 @@ export const TypewriterTitle: React.FC<TypewriterTitleProps> = ({ text }) => {
         fontFamily,
       }}
     >
+      {/* Background image */}
+      {backgroundImage && (
+        <img
+          src={backgroundImage}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: 0.15,
+          }}
+        />
+      )}
+
       <div
         style={{
           color: BRAND.colors.white,

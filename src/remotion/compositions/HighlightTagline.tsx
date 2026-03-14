@@ -10,6 +10,7 @@ const { fontFamily } = loadFont('normal', {
 type HighlightTaglineProps = {
   text: string;
   highlightWord: string;
+  backgroundImage?: string;
 };
 
 const Highlight: React.FC<{
@@ -54,6 +55,7 @@ const Highlight: React.FC<{
 export const HighlightTagline: React.FC<HighlightTaglineProps> = ({
   text,
   highlightWord,
+  backgroundImage,
 }) => {
   const highlightIndex = text.indexOf(highlightWord);
   const hasHighlight = highlightIndex >= 0;
@@ -72,6 +74,22 @@ export const HighlightTagline: React.FC<HighlightTaglineProps> = ({
         padding: 120,
       }}
     >
+      {/* Background image */}
+      {backgroundImage && (
+        <img
+          src={backgroundImage}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: 0.15,
+          }}
+        />
+      )}
+
       <div
         style={{
           color: BRAND.colors.white,

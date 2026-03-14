@@ -15,9 +15,10 @@ type DataPoint = {
 type DataBarChartProps = {
   title: string;
   data: DataPoint[];
+  backgroundImage?: string;
 };
 
-export const DataBarChart: React.FC<DataBarChartProps> = ({ title, data }) => {
+export const DataBarChart: React.FC<DataBarChartProps> = ({ title, data, backgroundImage }) => {
   const frame = useCurrentFrame();
   const { fps, height } = useVideoConfig();
 
@@ -41,6 +42,22 @@ export const DataBarChart: React.FC<DataBarChartProps> = ({ title, data }) => {
         fontFamily,
       }}
     >
+      {/* Background image */}
+      {backgroundImage && (
+        <img
+          src={backgroundImage}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: 0.1,
+          }}
+        />
+      )}
+
       {/* Title */}
       <div
         style={{

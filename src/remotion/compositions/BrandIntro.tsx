@@ -17,9 +17,11 @@ const { fontFamily } = loadFont('normal', {
 type BrandIntroProps = {
   title: string;
   subtitle: string;
+  backgroundImage?: string;
+  logoUrl?: string;
 };
 
-export const BrandIntro: React.FC<BrandIntroProps> = ({ title, subtitle }) => {
+export const BrandIntro: React.FC<BrandIntroProps> = ({ title, subtitle, backgroundImage, logoUrl }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -66,6 +68,36 @@ export const BrandIntro: React.FC<BrandIntroProps> = ({ title, subtitle }) => {
         padding: 80,
       }}
     >
+      {/* Background image */}
+      {backgroundImage && (
+        <img
+          src={backgroundImage}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: 0.15,
+          }}
+        />
+      )}
+
+      {/* Logo */}
+      {logoUrl && (
+        <img
+          src={logoUrl}
+          style={{
+            position: 'absolute',
+            top: 40,
+            right: 40,
+            height: 80,
+            objectFit: 'contain',
+          }}
+        />
+      )}
+
       {/* Title */}
       <div
         style={{
