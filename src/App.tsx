@@ -11,6 +11,7 @@ import WhitePaperGenerator from "./pages/WhitePaperGenerator";
 import WhitePaperPreview from "./pages/WhitePaperPreview";
 import VideoStudio from "./pages/VideoStudio";
 import NotFound from "./pages/NotFound";
+import { PasswordGate } from "./components/PasswordGate";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <PasswordGate>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
@@ -32,6 +34,7 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      </PasswordGate>
     </TooltipProvider>
   </QueryClientProvider>
 );
