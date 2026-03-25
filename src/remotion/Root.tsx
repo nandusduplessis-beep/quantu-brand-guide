@@ -4,6 +4,9 @@ import { LowerThird } from './compositions/LowerThird';
 import { DataBarChart } from './compositions/DataBarChart';
 import { TypewriterTitle } from './compositions/TypewriterTitle';
 import { HighlightTagline } from './compositions/HighlightTagline';
+import { SocialReel } from './compositions/SocialReel';
+import { PhotoShowcase } from './compositions/PhotoShowcase';
+import { StatCallout } from './compositions/StatCallout';
 import { BRAND } from './brand';
 
 export const RemotionRoot = () => {
@@ -35,6 +38,7 @@ export const RemotionRoot = () => {
           }}
         />
       </Folder>
+
       <Folder name="Data">
         <Composition
           id="DataBarChart"
@@ -54,7 +58,23 @@ export const RemotionRoot = () => {
             ],
           }}
         />
+        <Composition
+          id="StatCallout"
+          component={StatCallout}
+          durationInFrames={150}
+          fps={30}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            statValue: '47',
+            statUnit: '%',
+            label: 'of enterprises plan to increase quantum investment in 2025',
+            context: 'TQI Market Research',
+            source: 'The Quantum Insider Report 2025',
+          }}
+        />
       </Folder>
+
       <Folder name="Text">
         <Composition
           id="TypewriterTitle"
@@ -77,6 +97,39 @@ export const RemotionRoot = () => {
           defaultProps={{
             text: 'Empowering confident decisions that move the industry forward.',
             highlightWord: 'confident decisions',
+          }}
+        />
+      </Folder>
+
+      <Folder name="Social">
+        <Composition
+          id="SocialReel"
+          component={SocialReel}
+          durationInFrames={180}
+          fps={30}
+          width={1080}
+          height={1920}
+          defaultProps={{
+            headline: 'Quantum\nMarket\nIntelligence',
+            subline: 'Data-driven insights for the quantum era.',
+            badge: 'NEW',
+          }}
+        />
+        <Composition
+          id="PhotoShowcase"
+          component={PhotoShowcase}
+          durationInFrames={270}
+          fps={30}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            title: 'Quantum in Focus',
+            photos: [
+              { url: '', caption: 'Caption one' },
+              { url: '', caption: 'Caption two' },
+              { url: '', caption: 'Caption three' },
+            ],
+            credit: `© ${BRAND.shortName} ${new Date().getFullYear()}`,
           }}
         />
       </Folder>
