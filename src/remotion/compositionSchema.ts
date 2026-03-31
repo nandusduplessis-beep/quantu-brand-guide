@@ -37,7 +37,66 @@ export type CompositionKey =
   | "SocialReel"
   | "PhotoShowcase"
   | "StatCallout"
-  | "SaaSPromo";
+  | "SaaSPromo"
+  | "SaaSPromoVertical"
+  | "SaaSPromoSquare";
+
+const saasPromoDefaults = {
+  brandTheme: "qhub",
+  heroTitle: "Launch Your Platform With Style",
+  feature1Title: "Market Intelligence",
+  feature1Desc: "Real-time quantum market data and competitive monitoring",
+  feature2Title: "Data Analytics & Insights",
+  feature2Desc: "AI-powered trend discovery and informed decisions",
+  feature3Title: "Predictive Analytics",
+  feature3Desc: "Forecast trends and outcomes to stay ahead",
+  mockupHeadline: "AI solutions built for real business impact",
+  mockupSubtitle: "Streamline operations, elevate decision-making, and fuel growth",
+  mockupCtaText: "Start for free",
+  statNumber: "500+",
+  statLabel: "Enterprise Clients",
+  stat2Number: "10M+",
+  stat2Label: "Data Points Analyzed",
+  stat3Number: "99.9%",
+  stat3Label: "Uptime",
+  productName: "QHUB",
+  tagline: BRAND.tagline,
+  ctaText: "Explore all services",
+  ctaUrl: "qhub.thequantuminsider.com",
+};
+
+const saasPromoFields: PropFieldDescriptor[] = [
+  { key: "brandTheme", label: "Brand Theme", type: "select", options: [
+    { value: "tqi", label: "The Quantum Insider" },
+    { value: "qhub", label: "QHUB" },
+    { value: "resonance", label: "Resonance" },
+    { value: "aiInsider", label: "AI Insider" },
+    { value: "spaceInsider", label: "Space Insider" },
+  ]},
+  { key: "backgroundImage", label: "Background Image", type: "image" },
+  { key: "heroTitle", label: "Hero Title", type: "text", placeholder: "Enter hero title..." },
+  { key: "feature1Title", label: "Feature 1 Title", type: "text", placeholder: "Feature title..." },
+  { key: "feature1Desc", label: "Feature 1 Description", type: "text", placeholder: "Feature description..." },
+  { key: "feature2Title", label: "Feature 2 Title", type: "text", placeholder: "Feature title..." },
+  { key: "feature2Desc", label: "Feature 2 Description", type: "text", placeholder: "Feature description..." },
+  { key: "feature3Title", label: "Feature 3 Title", type: "text", placeholder: "Feature title..." },
+  { key: "feature3Desc", label: "Feature 3 Description", type: "text", placeholder: "Feature description..." },
+  { key: "mockupHeadline", label: "Mockup Headline", type: "text", placeholder: "Enter headline..." },
+  { key: "mockupSubtitle", label: "Mockup Subtitle", type: "text", placeholder: "Enter subtitle..." },
+  { key: "mockupCtaText", label: "Mockup CTA Text", type: "text", placeholder: "CTA button text..." },
+  { key: "mockupScreenshot", label: "SaaS Screenshot", type: "image" },
+  { key: "statNumber", label: "Stat 1 Number", type: "text", placeholder: "e.g. 500+" },
+  { key: "statLabel", label: "Stat 1 Label", type: "text", placeholder: "e.g. Enterprise Clients" },
+  { key: "stat2Number", label: "Stat 2 Number", type: "text", placeholder: "e.g. 10M+" },
+  { key: "stat2Label", label: "Stat 2 Label", type: "text", placeholder: "e.g. Data Points" },
+  { key: "stat3Number", label: "Stat 3 Number", type: "text", placeholder: "e.g. 99.9%" },
+  { key: "stat3Label", label: "Stat 3 Label", type: "text", placeholder: "e.g. Uptime" },
+  { key: "productName", label: "Product Name", type: "text", placeholder: "Product name..." },
+  { key: "tagline", label: "Tagline", type: "textarea", placeholder: "Enter tagline..." },
+  { key: "ctaText", label: "CTA Text", type: "text", placeholder: "CTA button text..." },
+  { key: "ctaUrl", label: "CTA URL", type: "text", placeholder: "Website URL..." },
+  { key: "logoUrl", label: "Logo", type: "image" },
+];
 
 export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
   BrandIntro: {
@@ -238,5 +297,41 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
       { key: "ctaUrl", label: "CTA URL", type: "text", placeholder: "Website URL..." },
       { key: "logoUrl", label: "Logo", type: "image" },
     ],
+  },
+  SaaSPromoVertical: {
+    component: SaaSPromo,
+    label: "SaaS Promo (Vertical 9:16)",
+    description: "Vertical SaaS promo for YouTube Shorts / Instagram Reels",
+    durationInFrames: 780,
+    defaultProps: { ...compositionRegistry?.SaaSPromo?.defaultProps || {
+      brandTheme: "qhub", heroTitle: "Launch Your Platform With Style",
+      feature1Title: "Market Intelligence", feature1Desc: "Real-time quantum market data and competitive monitoring",
+      feature2Title: "Data Analytics & Insights", feature2Desc: "AI-powered trend discovery and informed decisions",
+      feature3Title: "Predictive Analytics", feature3Desc: "Forecast trends and outcomes to stay ahead",
+      mockupHeadline: "AI solutions built for real business impact",
+      mockupSubtitle: "Streamline operations, elevate decision-making, and fuel growth",
+      mockupCtaText: "Start for free", statNumber: "500+", statLabel: "Enterprise Clients",
+      stat2Number: "10M+", stat2Label: "Data Points Analyzed", stat3Number: "99.9%", stat3Label: "Uptime",
+      productName: "QHUB", tagline: BRAND.tagline, ctaText: "Explore all services", ctaUrl: "qhub.thequantuminsider.com",
+    }},
+    fields: compositionRegistry?.SaaSPromo?.fields || [],
+  },
+  SaaSPromoSquare: {
+    component: SaaSPromo,
+    label: "SaaS Promo (Square 1:1)",
+    description: "Square SaaS promo for LinkedIn / Instagram feed",
+    durationInFrames: 780,
+    defaultProps: { ...compositionRegistry?.SaaSPromo?.defaultProps || {
+      brandTheme: "qhub", heroTitle: "Launch Your Platform With Style",
+      feature1Title: "Market Intelligence", feature1Desc: "Real-time quantum market data and competitive monitoring",
+      feature2Title: "Data Analytics & Insights", feature2Desc: "AI-powered trend discovery and informed decisions",
+      feature3Title: "Predictive Analytics", feature3Desc: "Forecast trends and outcomes to stay ahead",
+      mockupHeadline: "AI solutions built for real business impact",
+      mockupSubtitle: "Streamline operations, elevate decision-making, and fuel growth",
+      mockupCtaText: "Start for free", statNumber: "500+", statLabel: "Enterprise Clients",
+      stat2Number: "10M+", stat2Label: "Data Points Analyzed", stat3Number: "99.9%", stat3Label: "Uptime",
+      productName: "QHUB", tagline: BRAND.tagline, ctaText: "Explore all services", ctaUrl: "qhub.thequantuminsider.com",
+    }},
+    fields: compositionRegistry?.SaaSPromo?.fields || [],
   },
 };

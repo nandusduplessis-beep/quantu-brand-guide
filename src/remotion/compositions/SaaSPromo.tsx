@@ -136,7 +136,8 @@ const HeroScene: React.FC<{
   backgroundImage?: string;
 }> = ({ heroTitle, theme, backgroundImage }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
+  const s = Math.min(width, height) / 1080;
 
   const titleScale = spring({ frame, fps, config: { damping: 200 } });
   const titleOpacity = interpolate(frame, [0, 0.5 * fps], [0, 1], {
@@ -182,14 +183,14 @@ const HeroScene: React.FC<{
       <div
         style={{
           color: BRAND.colors.white,
-          fontSize: 80,
+          fontSize: 72 * s,
           fontWeight: 700,
           opacity: titleOpacity,
           transform: `scale(${titleScale})`,
           textAlign: 'center',
           letterSpacing: -1,
           lineHeight: 1.1,
-          maxWidth: 1200,
+          maxWidth: width * 0.85,
           zIndex: 1,
         }}
       >
@@ -219,9 +220,12 @@ const FeatureCardsScene: React.FC<{
   backgroundImage?: string;
 }> = ({ features, theme, backgroundImage }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
 
-  const featureIcons = ['\u2B21', '\u2B22', '\u2B23']; // hexagon variants
+  const isVertical = height > width;
+  const isSquare = Math.abs(width - height) < 100;
+  const featureIcons = ['\u2B21', '\u2B22', '\u2B23'];
+  const s = Math.min(width, height) / 1080; // scale factor
 
   return (
     <AbsoluteFill
@@ -231,12 +235,17 @@ const FeatureCardsScene: React.FC<{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 100,
+        padding: 60 * s,
       }}
     >
       <SceneBackground theme={theme} backgroundImage={backgroundImage} glowPosition="50% 60%" />
 
-      <div style={{ display: 'flex', gap: 40, zIndex: 1 }}>
+      <div style={{
+        display: 'flex',
+        flexDirection: isVertical || isSquare ? 'column' : 'row',
+        gap: (isVertical ? 24 : 40) * s,
+        zIndex: 1,
+      }}>
         {features.map((feat, i) => {
           const progress = spring({
             frame: frame - i * 8 - 15,
@@ -255,56 +264,44 @@ const FeatureCardsScene: React.FC<{
             <div
               key={i}
               style={{
-                width: 340,
-                padding: 40,
-                borderRadius: 20,
+                width: isVertical ? width * 0.75 : 340 * s,
+                padding: (isVertical ? 28 : 40) * s,
+                borderRadius: 20 * s,
                 background: hexToRgba(BRAND.colors.deepNavy, 0.8),
                 border: `1px solid ${hexToRgba(theme.accent, 0.2)}`,
                 opacity: cardOpacity,
                 transform: `translateY(${cardY}px)`,
                 display: 'flex',
-                flexDirection: 'column',
+                flexDirection: isVertical ? 'row' : 'column',
                 alignItems: 'center',
-                textAlign: 'center',
-                gap: 20,
+                textAlign: isVertical ? 'left' : 'center',
+                gap: 16 * s,
               }}
             >
-              {/* Icon circle with gradient */}
               <div
                 style={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: 32,
+                  width: 56 * s,
+                  height: 56 * s,
+                  minWidth: 56 * s,
+                  borderRadius: 28 * s,
                   background: `linear-gradient(135deg, ${theme.glow}, ${theme.accent})`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: 28,
+                  fontSize: 24 * s,
                   color: BRAND.colors.white,
                   transform: `scale(${progress})`,
                 }}
               >
                 {featureIcons[i]}
               </div>
-              <div
-                style={{
-                  color: BRAND.colors.white,
-                  fontSize: 24,
-                  fontWeight: 700,
-                  lineHeight: 1.3,
-                }}
-              >
-                {feat.title}
-              </div>
-              <div
-                style={{
-                  color: BRAND.colors.coolGray,
-                  fontSize: 16,
-                  fontWeight: 400,
-                  lineHeight: 1.5,
-                }}
-              >
-                {feat.desc}
+              <div style={{ flex: 1 }}>
+                <div style={{ color: BRAND.colors.white, fontSize: 22 * s, fontWeight: 700, lineHeight: 1.3 }}>
+                  {feat.title}
+                </div>
+                <div style={{ color: BRAND.colors.coolGray, fontSize: 14 * s, fontWeight: 400, lineHeight: 1.5, marginTop: 6 * s }}>
+                  {feat.desc}
+                </div>
               </div>
             </div>
           );
@@ -325,7 +322,9 @@ const BrowserMockScene: React.FC<{
   backgroundImage?: string;
 }> = ({ headline, subtitle, ctaText, screenshot, theme, backgroundImage }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
+  const s = Math.min(width, height) / 1080;
+  const isVertical = height > width;
 
   const frameProgress = spring({ frame, fps, config: { damping: 200 } });
   const frameY = interpolate(frameProgress, [0, 1], [80, 0], {
@@ -336,6 +335,9 @@ const BrowserMockScene: React.FC<{
     extrapolateLeft: 'clamp',
   });
 
+  const mockWidth = isVertical ? width * 0.85 : width * 0.65;
+  const mockHeight = isVertical ? mockWidth * 0.7 : mockWidth * 0.58;
+
   return (
     <AbsoluteFill
       style={{
@@ -344,7 +346,7 @@ const BrowserMockScene: React.FC<{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 80,
+        padding: 40 * s,
       }}
     >
       <SceneBackground theme={theme} backgroundImage={backgroundImage} glowPosition="50% 30%" />
@@ -352,8 +354,8 @@ const BrowserMockScene: React.FC<{
       {/* Browser frame */}
       <div
         style={{
-          width: 1200,
-          height: 700,
+          width: mockWidth,
+          height: mockHeight,
           borderRadius: 16,
           border: `1px solid ${hexToRgba(BRAND.colors.coolGray, 0.15)}`,
           background: hexToRgba(BRAND.colors.deepNavy, 0.9),
@@ -439,10 +441,10 @@ const BrowserMockScene: React.FC<{
               <div
                 style={{
                   color: BRAND.colors.white,
-                  fontSize: 44,
+                  fontSize: 36 * s,
                   fontWeight: 700,
                   textAlign: 'center',
-                  maxWidth: 800,
+                  maxWidth: mockWidth * 0.75,
                   lineHeight: 1.2,
                   zIndex: 1,
                 }}
@@ -452,11 +454,11 @@ const BrowserMockScene: React.FC<{
               <div
                 style={{
                   color: BRAND.colors.coolGray,
-                  fontSize: 20,
+                  fontSize: 16 * s,
                   fontWeight: 400,
                   textAlign: 'center',
-                  maxWidth: 600,
-                  marginTop: 20,
+                  maxWidth: mockWidth * 0.65,
+                  marginTop: 16 * s,
                   lineHeight: 1.5,
                   zIndex: 1,
                 }}
@@ -465,12 +467,12 @@ const BrowserMockScene: React.FC<{
               </div>
               <div
                 style={{
-                  marginTop: 32,
-                  padding: '14px 40px',
+                  marginTop: 24 * s,
+                  padding: `${12 * s}px ${32 * s}px`,
                   borderRadius: 999,
                   background: theme.accent,
                   color: BRAND.colors.white,
-                  fontSize: 18,
+                  fontSize: 16 * s,
                   fontWeight: 700,
                   zIndex: 1,
                 }}
@@ -493,7 +495,9 @@ const StatsScene: React.FC<{
   backgroundImage?: string;
 }> = ({ stats, theme, backgroundImage }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
+  const s = Math.min(width, height) / 1080;
+  const isVertical = height > width;
 
   const headingOpacity = interpolate(frame, [0, 0.5 * fps], [0, 1], {
     extrapolateRight: 'clamp',
@@ -510,17 +514,16 @@ const StatsScene: React.FC<{
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 80,
-        gap: 40,
+        padding: 60 * s,
+        gap: 32 * s,
       }}
     >
       <SceneBackground theme={theme} backgroundImage={backgroundImage} glowPosition="50% 50%" />
 
-      {/* Heading */}
       <div
         style={{
           color: BRAND.colors.coolGray,
-          fontSize: 20,
+          fontSize: 18 * s,
           fontWeight: 400,
           letterSpacing: 4,
           textTransform: 'uppercase',
@@ -531,40 +534,25 @@ const StatsScene: React.FC<{
         Our Impact
       </div>
 
-      {/* Main stat */}
       <div
         style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 12,
+          gap: 10 * s,
           transform: `scale(${mainStatScale})`,
           zIndex: 1,
         }}
       >
-        <div
-          style={{
-            color: theme.accent,
-            fontSize: 120,
-            fontWeight: 700,
-            lineHeight: 1,
-          }}
-        >
+        <div style={{ color: theme.accent, fontSize: 100 * s, fontWeight: 700, lineHeight: 1 }}>
           {stats[0]?.number}
         </div>
-        <div
-          style={{
-            color: BRAND.colors.coolGray,
-            fontSize: 24,
-            fontWeight: 400,
-          }}
-        >
+        <div style={{ color: BRAND.colors.coolGray, fontSize: 20 * s, fontWeight: 400 }}>
           {stats[0]?.label}
         </div>
       </div>
 
-      {/* Secondary stats */}
-      <div style={{ display: 'flex', gap: 40, zIndex: 1 }}>
+      <div style={{ display: 'flex', flexDirection: isVertical ? 'column' : 'row', gap: 24 * s, zIndex: 1 }}>
         {stats.slice(1).map((stat, i) => {
           const pillProgress = spring({
             frame: frame - (i + 1) * 10 - 20,
@@ -576,34 +564,22 @@ const StatsScene: React.FC<{
             <div
               key={i}
               style={{
-                padding: '20px 40px',
-                borderRadius: 16,
+                padding: `${16 * s}px ${32 * s}px`,
+                borderRadius: 14 * s,
                 border: `1px solid ${hexToRgba(theme.accent, 0.25)}`,
                 background: hexToRgba(BRAND.colors.deepNavy, 0.8),
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: 8,
+                gap: 6 * s,
                 opacity: pillProgress,
                 transform: `translateY(${interpolate(pillProgress, [0, 1], [30, 0])})`,
               }}
             >
-              <div
-                style={{
-                  color: BRAND.colors.white,
-                  fontSize: 36,
-                  fontWeight: 700,
-                }}
-              >
+              <div style={{ color: BRAND.colors.white, fontSize: 30 * s, fontWeight: 700 }}>
                 {stat.number}
               </div>
-              <div
-                style={{
-                  color: BRAND.colors.coolGray,
-                  fontSize: 16,
-                  fontWeight: 400,
-                }}
-              >
+              <div style={{ color: BRAND.colors.coolGray, fontSize: 14 * s, fontWeight: 400 }}>
                 {stat.label}
               </div>
             </div>
@@ -626,7 +602,8 @@ const CTAScene: React.FC<{
   backgroundImage?: string;
 }> = ({ productName, tagline, ctaText, ctaUrl, logoUrl, theme, backgroundImage }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
+  const s = Math.min(width, height) / 1080;
 
   const nameScale = spring({ frame, fps, config: { damping: 200 } });
   const nameOpacity = interpolate(frame, [0, 0.5 * fps], [0, 1], {
@@ -698,7 +675,7 @@ const CTAScene: React.FC<{
       <div
         style={{
           color: BRAND.colors.white,
-          fontSize: 80,
+          fontSize: 72 * s,
           fontWeight: 700,
           opacity: nameOpacity,
           transform: `scale(${nameScale})`,
@@ -713,11 +690,11 @@ const CTAScene: React.FC<{
       <div
         style={{
           color: BRAND.colors.coolGray,
-          fontSize: 24,
+          fontSize: 20 * s,
           fontWeight: 400,
           opacity: taglineOpacity,
           textAlign: 'center',
-          maxWidth: 800,
+          maxWidth: width * 0.75,
           lineHeight: 1.5,
           zIndex: 1,
         }}
@@ -728,12 +705,12 @@ const CTAScene: React.FC<{
       {/* CTA button */}
       <div
         style={{
-          marginTop: 16,
-          padding: '16px 48px',
+          marginTop: 16 * s,
+          padding: `${14 * s}px ${40 * s}px`,
           borderRadius: 999,
           background: theme.accent,
           color: BRAND.colors.white,
-          fontSize: 22,
+          fontSize: 20 * s,
           fontWeight: 700,
           transform: `scale(${ctaProgress})`,
           zIndex: 1,
@@ -746,7 +723,7 @@ const CTAScene: React.FC<{
       <div
         style={{
           color: hexToRgba(BRAND.colors.coolGray, 0.6),
-          fontSize: 18,
+          fontSize: 16 * s,
           fontWeight: 400,
           opacity: urlOpacity,
           zIndex: 1,
