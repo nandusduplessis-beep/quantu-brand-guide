@@ -102,8 +102,8 @@ const VideoStudio = () => {
               inputProps={currentProps}
               durationInFrames={comp.durationInFrames}
               fps={30}
-              compositionWidth={1920}
-              compositionHeight={1080}
+              compositionWidth={comp.width}
+              compositionHeight={comp.height}
               style={{ width: '100%' }}
               controls
               autoPlay
@@ -112,7 +112,7 @@ const VideoStudio = () => {
           </div>
           <div className="mt-4 flex items-center gap-4">
             <div className="flex gap-4 text-xs text-muted-foreground">
-              <span>1920 x 1080</span>
+              <span>{comp.width} x {comp.height}</span>
               <span>30 fps</span>
               <span>
                 {comp.durationInFrames} frames ({(comp.durationInFrames / 30).toFixed(1)}s)

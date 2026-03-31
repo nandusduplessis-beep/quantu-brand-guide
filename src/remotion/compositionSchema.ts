@@ -23,6 +23,8 @@ export type CompositionEntry = {
   component: React.FC<any>;
   label: string;
   description: string;
+  width: number;
+  height: number;
   durationInFrames: number;
   defaultProps: Record<string, any>;
   fields: PropFieldDescriptor[];
@@ -103,6 +105,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: BrandIntro,
     label: "Brand Intro",
     description: "Animated brand title with tagline reveal",
+    width: 1920,
+    height: 1080,
     durationInFrames: 150,
     defaultProps: {
       title: BRAND.name,
@@ -119,6 +123,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: LowerThird,
     label: "Lower Third",
     description: "Name and title overlay for video interviews",
+    width: 1920,
+    height: 1080,
     durationInFrames: 150,
     defaultProps: {
       name: "Dr. Jane Smith",
@@ -134,6 +140,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: DataBarChart,
     label: "Data Bar Chart",
     description: "Animated bar chart for market data visualization",
+    width: 1920,
+    height: 1080,
     durationInFrames: 120,
     defaultProps: {
       title: "Quantum Computing Market Growth",
@@ -155,6 +163,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: TypewriterTitle,
     label: "Typewriter Title",
     description: "Typewriter text reveal for headlines",
+    width: 1920,
+    height: 1080,
     durationInFrames: 180,
     defaultProps: {
       text: BRAND.tagline,
@@ -168,6 +178,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: HighlightTagline,
     label: "Highlight Tagline",
     description: "Text with animated word highlight effect",
+    width: 1920,
+    height: 1080,
     durationInFrames: 120,
     defaultProps: {
       text: "Empowering confident decisions that move the industry forward.",
@@ -183,6 +195,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: SocialReel,
     label: "Social Reel",
     description: "Vertical 9:16 reel with headline and badge for LinkedIn/Instagram",
+    width: 1080,
+    height: 1920,
     durationInFrames: 180,
     defaultProps: {
       headline: "The Quantum Era Is Here",
@@ -201,6 +215,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: PhotoShowcase,
     label: "Photo Showcase",
     description: "Ken Burns slideshow with captions — 3 photos, 9 seconds",
+    width: 1920,
+    height: 1080,
     durationInFrames: 270,
     defaultProps: {
       title: "Quantum in Focus",
@@ -220,6 +236,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: StatCallout,
     label: "Stat Callout",
     description: "Animated number count-up with pulsing rings — 5 seconds",
+    width: 1920,
+    height: 1080,
     durationInFrames: 150,
     defaultProps: {
       statValue: 71,
@@ -241,6 +259,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: SaaSPromo,
     label: "SaaS Product Promo",
     description: "Multi-scene SaaS promotional video with glassmorphism UI",
+    width: 1920,
+    height: 1080,
     durationInFrames: 780,
     defaultProps: { ...saasPromoDefaults },
     fields: saasPromoFields,
@@ -249,6 +269,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: SaaSPromo,
     label: "SaaS Promo (Vertical 9:16)",
     description: "Vertical SaaS promo for YouTube Shorts / Instagram Reels",
+    width: 1080,
+    height: 1920,
     durationInFrames: 780,
     defaultProps: { ...saasPromoDefaults },
     fields: saasPromoFields,
@@ -257,6 +279,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: SaaSPromo,
     label: "SaaS Promo (Square 1:1)",
     description: "Square SaaS promo for LinkedIn / Instagram feed",
+    width: 1080,
+    height: 1080,
     durationInFrames: 780,
     defaultProps: { ...saasPromoDefaults },
     fields: saasPromoFields,
