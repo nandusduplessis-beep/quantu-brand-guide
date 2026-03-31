@@ -7,6 +7,7 @@ import { HighlightTagline } from './compositions/HighlightTagline';
 import { SocialReel } from './compositions/SocialReel';
 import { PhotoShowcase } from './compositions/PhotoShowcase';
 import { StatCallout } from './compositions/StatCallout';
+import { SaaSPromo } from './compositions/SaaSPromo';
 import { BRAND } from './brand';
 
 export const RemotionRoot = () => {
@@ -130,6 +131,40 @@ export const RemotionRoot = () => {
               { url: '', caption: 'Caption three' },
             ],
             credit: `© ${BRAND.shortName} ${new Date().getFullYear()}`,
+          }}
+        />
+      </Folder>
+
+      <Folder name="Marketing">
+        <Composition
+          id="SaaSPromo"
+          component={SaaSPromo}
+          durationInFrames={780}
+          fps={30}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            brandTheme: 'qhub' as const,
+            heroTitle: 'Launch Your Platform With Style',
+            feature1Title: 'Market Intelligence',
+            feature1Desc: 'Real-time quantum market data and competitive monitoring',
+            feature2Title: 'Data Analytics & Insights',
+            feature2Desc: 'AI-powered trend discovery and informed decisions',
+            feature3Title: 'Predictive Analytics',
+            feature3Desc: 'Forecast trends and outcomes to stay ahead',
+            mockupHeadline: 'AI solutions built for real business impact',
+            mockupSubtitle: 'Streamline operations, elevate decision-making, and fuel growth',
+            mockupCtaText: 'Start for free',
+            statNumber: '500+',
+            statLabel: 'Enterprise Clients',
+            stat2Number: '10M+',
+            stat2Label: 'Data Points Analyzed',
+            stat3Number: '99.9%',
+            stat3Label: 'Uptime',
+            productName: 'QHUB',
+            tagline: BRAND.tagline,
+            ctaText: 'Explore all services',
+            ctaUrl: 'qhub.thequantuminsider.com',
           }}
         />
       </Folder>
