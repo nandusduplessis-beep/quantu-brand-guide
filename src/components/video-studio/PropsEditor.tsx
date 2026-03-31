@@ -49,6 +49,23 @@ export const PropsEditor: React.FC<PropsEditorProps> = ({ composition, values, o
           );
         }
 
+        if (field.type === 'select' && field.options) {
+          return (
+            <div key={field.key} className="space-y-2">
+              <Label className="text-sm font-medium">{field.label}</Label>
+              <select
+                value={val || ''}
+                onChange={(e) => onChange(field.key, e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                {field.options.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+          );
+        }
+
         if (field.type === 'textarea') {
           return (
             <div key={field.key} className="space-y-2">
