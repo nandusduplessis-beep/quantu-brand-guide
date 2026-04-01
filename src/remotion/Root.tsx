@@ -8,6 +8,7 @@ import { SocialReel } from './compositions/SocialReel';
 import { PhotoShowcase } from './compositions/PhotoShowcase';
 import { StatCallout } from './compositions/StatCallout';
 import { SaaSPromo } from './compositions/SaaSPromo';
+import { InfographicCards } from './compositions/InfographicCards';
 import { BRAND } from './brand';
 
 export const RemotionRoot = () => {
@@ -227,6 +228,31 @@ export const RemotionRoot = () => {
             tagline: BRAND.tagline,
             ctaText: 'Explore all services',
             ctaUrl: 'qhub.thequantuminsider.com',
+          }}
+        />
+      </Folder>
+      <Folder name="Infographic">
+        <Composition
+          id="InfographicCards"
+          component={InfographicCards}
+          durationInFrames={825}
+          fps={30}
+          width={1080}
+          height={1080}
+          defaultProps={{
+            brandTheme: 'tqi' as const,
+            section1Url: '',
+            section2Url: '',
+            section3Url: '',
+            section4Url: '',
+            section5Url: '',
+            section6Url: '',
+            fact1: "The World's First Quantum-Formulated Pizza",
+            fact2: 'Thermally transformed carbohydrate matrix optimized by quantum algorithms',
+            fact3: 'Pineapple: fundamentally incompatible in both classical and quantum realms',
+            fact4: '10,000 years on classical supercomputer — seconds on quantum',
+            fact5: 'Chemical-level simulation of every ingredient at molecular scale',
+            fact6: '2030: Full Quantum Dining — quantum-enhanced strombolis and pizza pockets',
           }}
         />
       </Folder>

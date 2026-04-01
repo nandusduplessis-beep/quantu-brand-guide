@@ -7,6 +7,7 @@ import { SocialReel } from "./compositions/SocialReel";
 import { PhotoShowcase } from "./compositions/PhotoShowcase";
 import { StatCallout } from "./compositions/StatCallout";
 import { SaaSPromo } from "./compositions/SaaSPromo";
+import { InfographicCards } from "./compositions/InfographicCards";
 import { BRAND } from "./brand";
 
 export type PropFieldType = "text" | "textarea" | "image" | "dataTable" | "select";
@@ -41,7 +42,8 @@ export type CompositionKey =
   | "StatCallout"
   | "SaaSPromo"
   | "SaaSPromoVertical"
-  | "SaaSPromoSquare";
+  | "SaaSPromoSquare"
+  | "InfographicCards";
 
 const saasPromoDefaults = {
   brandTheme: "qhub",
@@ -284,5 +286,49 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     durationInFrames: 780,
     defaultProps: { ...saasPromoDefaults },
     fields: saasPromoFields,
+  },
+  InfographicCards: {
+    component: InfographicCards,
+    label: "Infographic Cards",
+    description: "Animated infographic sections as cards with facts — 1:1 LinkedIn",
+    width: 1080,
+    height: 1080,
+    durationInFrames: 825,
+    defaultProps: {
+      brandTheme: "tqi",
+      section1Url: "",
+      section2Url: "",
+      section3Url: "",
+      section4Url: "",
+      section5Url: "",
+      section6Url: "",
+      fact1: "The World's First Quantum-Formulated Pizza",
+      fact2: "Thermally transformed carbohydrate matrix optimized by quantum algorithms",
+      fact3: "Pineapple: fundamentally incompatible in both classical and quantum realms",
+      fact4: "10,000 years on classical supercomputer — seconds on quantum",
+      fact5: "Chemical-level simulation of every ingredient at molecular scale",
+      fact6: "2030: Full Quantum Dining — quantum-enhanced strombolis and pizza pockets",
+    },
+    fields: [
+      { key: "brandTheme", label: "Brand Theme", type: "select", options: [
+        { value: "tqi", label: "The Quantum Insider" },
+        { value: "qhub", label: "QHUB" },
+        { value: "resonance", label: "Resonance" },
+        { value: "aiInsider", label: "AI Insider" },
+        { value: "spaceInsider", label: "Space Insider" },
+      ]},
+      { key: "section1Url", label: "Section 1 Image", type: "image" },
+      { key: "fact1", label: "Fact 1", type: "text", placeholder: "Headline fact..." },
+      { key: "section2Url", label: "Section 2 Image", type: "image" },
+      { key: "fact2", label: "Fact 2", type: "text", placeholder: "Columns fact..." },
+      { key: "section3Url", label: "Section 3 Image", type: "image" },
+      { key: "fact3", label: "Fact 3", type: "text", placeholder: "Findings fact..." },
+      { key: "section4Url", label: "Section 4 Image", type: "image" },
+      { key: "fact4", label: "Fact 4", type: "text", placeholder: "Calculation fact..." },
+      { key: "section5Url", label: "Section 5 Image", type: "image" },
+      { key: "fact5", label: "Fact 5", type: "text", placeholder: "Simulation fact..." },
+      { key: "section6Url", label: "Section 6 Image", type: "image" },
+      { key: "fact6", label: "Fact 6", type: "text", placeholder: "Roadmap fact..." },
+    ],
   },
 };
