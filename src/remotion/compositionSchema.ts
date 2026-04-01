@@ -7,6 +7,7 @@ import { SocialReel } from "./compositions/SocialReel";
 import { PhotoShowcase } from "./compositions/PhotoShowcase";
 import { StatCallout } from "./compositions/StatCallout";
 import { SaaSPromo } from "./compositions/SaaSPromo";
+import { InfographicCards } from "./compositions/InfographicCards";
 import { BRAND } from "./brand";
 
 export type PropFieldType = "text" | "textarea" | "image" | "dataTable" | "select";
@@ -23,6 +24,8 @@ export type CompositionEntry = {
   component: React.FC<any>;
   label: string;
   description: string;
+  width: number;
+  height: number;
   durationInFrames: number;
   defaultProps: Record<string, any>;
   fields: PropFieldDescriptor[];
@@ -39,7 +42,8 @@ export type CompositionKey =
   | "StatCallout"
   | "SaaSPromo"
   | "SaaSPromoVertical"
-  | "SaaSPromoSquare";
+  | "SaaSPromoSquare"
+  | "InfographicCards";
 
 const saasPromoDefaults = {
   brandTheme: "qhub",
@@ -103,6 +107,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: BrandIntro,
     label: "Brand Intro",
     description: "Animated brand title with tagline reveal",
+    width: 1920,
+    height: 1080,
     durationInFrames: 150,
     defaultProps: {
       title: BRAND.name,
@@ -119,6 +125,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: LowerThird,
     label: "Lower Third",
     description: "Name and title overlay for video interviews",
+    width: 1920,
+    height: 1080,
     durationInFrames: 150,
     defaultProps: {
       name: "Dr. Jane Smith",
@@ -134,6 +142,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: DataBarChart,
     label: "Data Bar Chart",
     description: "Animated bar chart for market data visualization",
+    width: 1920,
+    height: 1080,
     durationInFrames: 120,
     defaultProps: {
       title: "Quantum Computing Market Growth",
@@ -155,6 +165,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: TypewriterTitle,
     label: "Typewriter Title",
     description: "Typewriter text reveal for headlines",
+    width: 1920,
+    height: 1080,
     durationInFrames: 180,
     defaultProps: {
       text: BRAND.tagline,
@@ -168,6 +180,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: HighlightTagline,
     label: "Highlight Tagline",
     description: "Text with animated word highlight effect",
+    width: 1920,
+    height: 1080,
     durationInFrames: 120,
     defaultProps: {
       text: "Empowering confident decisions that move the industry forward.",
@@ -183,6 +197,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: SocialReel,
     label: "Social Reel",
     description: "Vertical 9:16 reel with headline and badge for LinkedIn/Instagram",
+    width: 1080,
+    height: 1920,
     durationInFrames: 180,
     defaultProps: {
       headline: "The Quantum Era Is Here",
@@ -201,6 +217,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: PhotoShowcase,
     label: "Photo Showcase",
     description: "Ken Burns slideshow with captions — 3 photos, 9 seconds",
+    width: 1920,
+    height: 1080,
     durationInFrames: 270,
     defaultProps: {
       title: "Quantum in Focus",
@@ -220,6 +238,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: StatCallout,
     label: "Stat Callout",
     description: "Animated number count-up with pulsing rings — 5 seconds",
+    width: 1920,
+    height: 1080,
     durationInFrames: 150,
     defaultProps: {
       statValue: 71,
@@ -241,6 +261,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: SaaSPromo,
     label: "SaaS Product Promo",
     description: "Multi-scene SaaS promotional video with glassmorphism UI",
+    width: 1920,
+    height: 1080,
     durationInFrames: 780,
     defaultProps: { ...saasPromoDefaults },
     fields: saasPromoFields,
@@ -249,6 +271,8 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: SaaSPromo,
     label: "SaaS Promo (Vertical 9:16)",
     description: "Vertical SaaS promo for YouTube Shorts / Instagram Reels",
+    width: 1080,
+    height: 1920,
     durationInFrames: 780,
     defaultProps: { ...saasPromoDefaults },
     fields: saasPromoFields,
@@ -257,8 +281,54 @@ export const compositionRegistry: Record<CompositionKey, CompositionEntry> = {
     component: SaaSPromo,
     label: "SaaS Promo (Square 1:1)",
     description: "Square SaaS promo for LinkedIn / Instagram feed",
+    width: 1080,
+    height: 1080,
     durationInFrames: 780,
     defaultProps: { ...saasPromoDefaults },
     fields: saasPromoFields,
+  },
+  InfographicCards: {
+    component: InfographicCards,
+    label: "Infographic Cards",
+    description: "Animated infographic sections as cards with facts — 1:1 LinkedIn",
+    width: 1080,
+    height: 1080,
+    durationInFrames: 825,
+    defaultProps: {
+      brandTheme: "tqi",
+      section1Url: "",
+      section2Url: "",
+      section3Url: "",
+      section4Url: "",
+      section5Url: "",
+      section6Url: "",
+      fact1: "The World's First Quantum-Formulated Pizza",
+      fact2: "Thermally transformed carbohydrate matrix optimized by quantum algorithms",
+      fact3: "Pineapple: fundamentally incompatible in both classical and quantum realms",
+      fact4: "10,000 years on classical supercomputer — seconds on quantum",
+      fact5: "Chemical-level simulation of every ingredient at molecular scale",
+      fact6: "2030: Full Quantum Dining — quantum-enhanced strombolis and pizza pockets",
+    },
+    fields: [
+      { key: "brandTheme", label: "Brand Theme", type: "select", options: [
+        { value: "tqi", label: "The Quantum Insider" },
+        { value: "qhub", label: "QHUB" },
+        { value: "resonance", label: "Resonance" },
+        { value: "aiInsider", label: "AI Insider" },
+        { value: "spaceInsider", label: "Space Insider" },
+      ]},
+      { key: "section1Url", label: "Section 1 Image", type: "image" },
+      { key: "fact1", label: "Fact 1", type: "text", placeholder: "Headline fact..." },
+      { key: "section2Url", label: "Section 2 Image", type: "image" },
+      { key: "fact2", label: "Fact 2", type: "text", placeholder: "Columns fact..." },
+      { key: "section3Url", label: "Section 3 Image", type: "image" },
+      { key: "fact3", label: "Fact 3", type: "text", placeholder: "Findings fact..." },
+      { key: "section4Url", label: "Section 4 Image", type: "image" },
+      { key: "fact4", label: "Fact 4", type: "text", placeholder: "Calculation fact..." },
+      { key: "section5Url", label: "Section 5 Image", type: "image" },
+      { key: "fact5", label: "Fact 5", type: "text", placeholder: "Simulation fact..." },
+      { key: "section6Url", label: "Section 6 Image", type: "image" },
+      { key: "fact6", label: "Fact 6", type: "text", placeholder: "Roadmap fact..." },
+    ],
   },
 };
